@@ -457,13 +457,15 @@
     </div>
 </div>
 
-<!-- Modalbox Tambah Nada -->
-<div id="createNadaModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden" onclick="closeCreateNadaModal()">
-    <div class="relative w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-5" onclick="event.stopPropagation()">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+<!-- Modalbox Kelola & Tambah Nada -->
+<div id="createNadaModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 hidden" onclick="closeCreateNadaModal()">
+    <div class="relative w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6 shadow-2xl space-y-4" onclick="event.stopPropagation()">
+        
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
-                <h3 class="text-lg font-bold text-white tracking-tight">Tambah Nada Baru</h3>
-                <p class="text-xs text-slate-400 mt-0.5">Tambahkan pilihan nada untuk katalog lagu</p>
+                <h3 class="text-lg font-bold text-white tracking-tight">Kelola Nada Lagu</h3>
+                <p class="text-xs text-slate-400 mt-0.5">Tambahkan, edit, atau hapus pilihan nada vokal</p>
             </div>
             <button type="button" 
                     onclick="closeCreateNadaModal()" 
@@ -475,43 +477,340 @@
             </button>
         </div>
 
-        <form method="POST" action="{{ route('admin.nadas.store') }}" class="space-y-4">
+        <!-- Success & Error Alert Boxes -->
+        <div id="createNadaSuccess" class="hidden rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs font-medium text-emerald-400 flex items-center justify-between">
+            <span id="createNadaSuccessText"></span>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-400 hover:text-emerald-300">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <div id="createNadaError" class="hidden rounded-xl border border-rose-500/20 bg-rose-500/10 p-3 text-xs font-medium text-rose-400 flex items-center justify-between">
+            <span id="createNadaErrorText"></span>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-rose-400 hover:text-rose-300">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Form Tambah Nada Baru -->
+        <form id="createNadaForm" method="POST" action="{{ route('admin.nadas.store') }}" class="space-y-1.5">
             @csrf
-            <div>
-                <label for="create_nada_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                    Nama Nada <span class="text-rose-400">*</span>
-                </label>
+            <label for="create_nada_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                Tambah Nada Baru
+            </label>
+            <div class="flex items-center gap-2">
                 <input type="text" 
                        name="nada" 
                        id="create_nada_name" 
                        required 
-                       placeholder="Contoh: pria, wanita, duet, anak"
-                       class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-            </div>
-
-            <div class="flex items-center justify-end gap-3 pt-2">
-                <button type="button" 
-                        onclick="closeCreateNadaModal()" 
-                        class="rounded-xl border border-slate-800 px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
-                    Batal
-                </button>
+                       placeholder="Contoh: pria, wanita, duet, anak..."
+                       class="block flex-1 rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
                 <button type="submit" 
-                        class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500 active:bg-blue-700 transition-colors shadow-sm">
-                    Simpan Nada
+                        id="createNadaSubmitBtn"
+                        class="shrink-0 inline-flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500 active:bg-blue-700 transition-colors shadow-sm">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    <span>Tambah</span>
                 </button>
             </div>
         </form>
+
+        <!-- Daftar Nada yang Sudah Ada -->
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+            <div class="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-300">
+                <span>Daftar Nada Terdaftar</span>
+                <span id="nadaCountBadge" class="text-slate-400 font-mono text-[11px] lowercase">{{ count($nadas ?? []) }} nada</span>
+            </div>
+
+            <div class="max-h-56 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/60 p-1.5">
+                <ul id="nadaListContainer" class="space-y-1 divide-y divide-slate-800/40">
+                    @forelse ($nadas ?? [] as $nadaItem)
+                        <li id="nada-row-{{ $nadaItem->id }}" class="pt-1 first:pt-0">
+                            <!-- View Mode -->
+                            <div id="nada-view-{{ $nadaItem->id }}" class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/40 transition-colors">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="h-2 w-2 rounded-full bg-blue-500 shrink-0"></span>
+                                    <span id="nada-text-{{ $nadaItem->id }}" class="text-sm font-medium text-white capitalize">{{ $nadaItem->nada }}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button type="button" 
+                                            onclick="startEditNada({{ $nadaItem->id }}, '{{ addslashes($nadaItem->nada) }}')" 
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors" 
+                                            title="Edit Nada">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" 
+                                            onclick="confirmDeleteNada({{ $nadaItem->id }}, '{{ addslashes($nadaItem->nada) }}')" 
+                                            class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors" 
+                                            title="Hapus Nada">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Inline Edit Mode -->
+                            <div id="nada-edit-{{ $nadaItem->id }}" class="hidden flex items-center gap-2 p-1.5 bg-slate-900/90 rounded-lg border border-slate-700/60">
+                                <input type="text" 
+                                       id="nada-input-{{ $nadaItem->id }}" 
+                                       value="{{ $nadaItem->nada }}" 
+                                       onkeydown="if(event.key === 'Enter'){ event.preventDefault(); saveEditNada({{ $nadaItem->id }}); } if(event.key === 'Escape'){ event.preventDefault(); cancelEditNada({{ $nadaItem->id }}); }"
+                                       class="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500">
+                                <button type="button" 
+                                        id="nada-save-btn-{{ $nadaItem->id }}"
+                                        onclick="saveEditNada({{ $nadaItem->id }})" 
+                                        class="p-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors" 
+                                        title="Simpan Perubahan">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                    </svg>
+                                </button>
+                                <button type="button" 
+                                        onclick="cancelEditNada({{ $nadaItem->id }})" 
+                                        class="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" 
+                                        title="Batal">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </li>
+                    @empty
+                        <li id="nadaEmptyState" class="text-center py-6 text-xs text-slate-400">
+                            Belum ada nada yang tersimpan.
+                        </li>
+                    @endforelse
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex items-center justify-end pt-3 border-t border-slate-800">
+            <button type="button" 
+                    onclick="closeCreateNadaModal()" 
+                    class="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors">
+                Tutup
+            </button>
+        </div>
+
     </div>
 </div>
 
 <script>
+    function showNadaError(message) {
+        const successBox = document.getElementById('createNadaSuccess');
+        if (successBox) successBox.classList.add('hidden');
+
+        const errorBox = document.getElementById('createNadaError');
+        const errorText = document.getElementById('createNadaErrorText');
+        if (errorBox && errorText) {
+            errorText.textContent = message;
+            errorBox.classList.remove('hidden');
+        }
+    }
+
+    function showNadaSuccess(message) {
+        const errorBox = document.getElementById('createNadaError');
+        if (errorBox) errorBox.classList.add('hidden');
+
+        const successBox = document.getElementById('createNadaSuccess');
+        const successText = document.getElementById('createNadaSuccessText');
+        if (successBox && successText) {
+            successText.textContent = message;
+            successBox.classList.remove('hidden');
+        }
+    }
+
+    function clearNadaAlerts() {
+        const errorBox = document.getElementById('createNadaError');
+        if (errorBox) errorBox.classList.add('hidden');
+        const successBox = document.getElementById('createNadaSuccess');
+        if (successBox) successBox.classList.add('hidden');
+    }
+
+    function updateNadaCountBadge() {
+        const listContainer = document.getElementById('nadaListContainer');
+        const badge = document.getElementById('nadaCountBadge');
+        if (listContainer && badge) {
+            const count = listContainer.querySelectorAll('li[id^="nada-row-"]').length;
+            badge.textContent = `${count} nada`;
+        }
+    }
+
     function openCreateNadaModal() {
+        clearNadaAlerts();
         document.getElementById('createNadaModal').classList.remove('hidden');
         document.getElementById('create_nada_name').focus();
     }
 
     function closeCreateNadaModal() {
         document.getElementById('createNadaModal').classList.add('hidden');
+    }
+
+    function startEditNada(id, currentName) {
+        clearNadaAlerts();
+        const viewEl = document.getElementById(`nada-view-${id}`);
+        const editEl = document.getElementById(`nada-edit-${id}`);
+        const inputEl = document.getElementById(`nada-input-${id}`);
+
+        if (viewEl && editEl && inputEl) {
+            viewEl.classList.add('hidden');
+            editEl.classList.remove('hidden');
+            inputEl.value = currentName;
+            inputEl.focus();
+            inputEl.select();
+        }
+    }
+
+    function cancelEditNada(id) {
+        const viewEl = document.getElementById(`nada-view-${id}`);
+        const editEl = document.getElementById(`nada-edit-${id}`);
+
+        if (viewEl && editEl) {
+            editEl.classList.add('hidden');
+            viewEl.classList.remove('hidden');
+        }
+    }
+
+    async function saveEditNada(id) {
+        clearNadaAlerts();
+        const inputEl = document.getElementById(`nada-input-${id}`);
+        const saveBtn = document.getElementById(`nada-save-btn-${id}`);
+        const newName = inputEl.value.trim().toLowerCase();
+
+        if (!newName) {
+            showNadaError('Nama nada tidak boleh kosong.');
+            return;
+        }
+
+        const oldName = document.getElementById(`nada-text-${id}`).textContent.trim().toLowerCase();
+        if (newName === oldName) {
+            cancelEditNada(id);
+            return;
+        }
+
+        if (saveBtn) saveBtn.disabled = true;
+
+        try {
+            const response = await fetch(`/admin/nadas/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ nada: newName })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                const message = result.message || (result.errors && result.errors.nada ? result.errors.nada[0] : 'Gagal memperbarui nada.');
+                showNadaError(message);
+                if (saveBtn) saveBtn.disabled = false;
+                return;
+            }
+
+            const updatedNada = result.data.nada;
+            const nadaCapitalized = updatedNada.charAt(0).toUpperCase() + updatedNada.slice(1);
+
+            // Update row text and onclick attribute
+            document.getElementById(`nada-text-${id}`).textContent = nadaCapitalized;
+            const viewEl = document.getElementById(`nada-view-${id}`);
+            const editBtn = viewEl.querySelector('button[title="Edit Nada"]');
+            if (editBtn) {
+                editBtn.setAttribute('onclick', `startEditNada(${id}, '${updatedNada.replace(/'/g, "\\'")}')`);
+            }
+            const delBtn = viewEl.querySelector('button[title="Hapus Nada"]');
+            if (delBtn) {
+                delBtn.setAttribute('onclick', `confirmDeleteNada(${id}, '${updatedNada.replace(/'/g, "\\'")}')`);
+            }
+
+            // Update dropdowns in song modals
+            ['create_songnada', 'edit_songnada'].forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    for (let opt of select.options) {
+                        if (opt.value.toLowerCase() === oldName) {
+                            opt.value = updatedNada;
+                            opt.textContent = nadaCapitalized;
+                        }
+                    }
+                }
+            });
+
+            cancelEditNada(id);
+            showNadaSuccess(`Nada berhasil diubah menjadi "${nadaCapitalized}".`);
+        } catch (err) {
+            showNadaError('Terjadi kesalahan saat memperbarui nada.');
+        } finally {
+            if (saveBtn) saveBtn.disabled = false;
+        }
+    }
+
+    async function confirmDeleteNada(id, name) {
+        clearNadaAlerts();
+        if (!confirm(`Apakah Anda yakin ingin menghapus nada "${name}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/admin/nadas/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                const message = result.message || 'Gagal menghapus nada.';
+                showNadaError(message);
+                return;
+            }
+
+            // Remove row from list
+            const row = document.getElementById(`nada-row-${id}`);
+            if (row) row.remove();
+
+            // Update dropdowns: remove option
+            const lowerName = name.toLowerCase();
+            ['create_songnada', 'edit_songnada'].forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    for (let i = select.options.length - 1; i >= 0; i--) {
+                        if (select.options[i].value.toLowerCase() === lowerName) {
+                            const wasSelected = select.options[i].selected;
+                            select.remove(i);
+                            if (wasSelected) {
+                                select.value = '-';
+                            }
+                        }
+                    }
+                }
+            });
+
+            // If list empty, show empty state
+            const listContainer = document.getElementById('nadaListContainer');
+            if (listContainer && listContainer.querySelectorAll('li[id^="nada-row-"]').length === 0) {
+                listContainer.innerHTML = '<li id="nadaEmptyState" class="text-center py-6 text-xs text-slate-400">Belum ada nada yang tersimpan.</li>';
+            }
+
+            updateNadaCountBadge();
+            showNadaSuccess(`Nada "${name}" berhasil dihapus.`);
+        } catch (err) {
+            showNadaError('Terjadi kesalahan saat menghapus nada.');
+        }
     }
 
     function openCreateModal() {
@@ -553,9 +852,153 @@
         document.getElementById('deleteModal').classList.add('hidden');
     }
 
+    // Handle AJAX submission for Tambah Nada to prevent parent modals from resetting
+    document.getElementById('createNadaForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        clearNadaAlerts();
+
+        const submitBtn = document.getElementById('createNadaSubmitBtn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Menyimpan...';
+
+        const inputNada = document.getElementById('create_nada_name');
+        const nadaValue = inputNada.value.trim().toLowerCase();
+
+        try {
+            const response = await fetch("{{ route('admin.nadas.store') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ nada: nadaValue })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                const message = result.message || (result.errors && result.errors.nada ? result.errors.nada[0] : 'Gagal menambahkan nada.');
+                showNadaError(message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                return;
+            }
+
+            const newNada = result.data.nada;
+            const newId = result.data.id;
+            const nadaCapitalized = newNada.charAt(0).toUpperCase() + newNada.slice(1);
+
+            // Add row to nada list container
+            const emptyState = document.getElementById('nadaEmptyState');
+            if (emptyState) emptyState.remove();
+
+            const listContainer = document.getElementById('nadaListContainer');
+            if (listContainer && !document.getElementById(`nada-row-${newId}`)) {
+                const newLi = document.createElement('li');
+                newLi.id = `nada-row-${newId}`;
+                newLi.className = 'pt-1 first:pt-0';
+                newLi.innerHTML = `
+                    <div id="nada-view-${newId}" class="flex items-center justify-between p-2 rounded-lg hover:bg-slate-800/40 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <span class="h-2 w-2 rounded-full bg-blue-500 shrink-0"></span>
+                            <span id="nada-text-${newId}" class="text-sm font-medium text-white capitalize">${nadaCapitalized}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button type="button" 
+                                    onclick="startEditNada(${newId}, '${newNada.replace(/'/g, "\\'")}')" 
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors" 
+                                    title="Edit Nada">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
+                                </svg>
+                            </button>
+                            <button type="button" 
+                                    onclick="confirmDeleteNada(${newId}, '${newNada.replace(/'/g, "\\'")}')" 
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors" 
+                                    title="Hapus Nada">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="nada-edit-${newId}" class="hidden flex items-center gap-2 p-1.5 bg-slate-900/90 rounded-lg border border-slate-700/60">
+                        <input type="text" 
+                               id="nada-input-${newId}" 
+                               value="${newNada}" 
+                               onkeydown="if(event.key === 'Enter'){ event.preventDefault(); saveEditNada(${newId}); } if(event.key === 'Escape'){ event.preventDefault(); cancelEditNada(${newId}); }"
+                               class="flex-1 rounded-lg border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500">
+                        <button type="button" 
+                                id="nada-save-btn-${newId}"
+                                onclick="saveEditNada(${newId})" 
+                                class="p-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white transition-colors" 
+                                title="Simpan Perubahan">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                            </svg>
+                        </button>
+                        <button type="button" 
+                                onclick="cancelEditNada(${newId})" 
+                                class="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" 
+                                title="Batal">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(newLi);
+            }
+
+            // Update dropdowns
+            ['create_songnada', 'edit_songnada'].forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    let exists = false;
+                    for (let i = 0; i < select.options.length; i++) {
+                        if (select.options[i].value.toLowerCase() === newNada.toLowerCase()) {
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        const opt = new Option(nadaCapitalized, newNada);
+                        select.add(opt);
+                    }
+                }
+            });
+
+            // Auto-select in active modal
+            const createSelect = document.getElementById('create_songnada');
+            if (createSelect && !document.getElementById('createModal').classList.contains('hidden')) {
+                createSelect.value = newNada;
+            }
+
+            const editSelect = document.getElementById('edit_songnada');
+            if (editSelect && !document.getElementById('editModal').classList.contains('hidden')) {
+                editSelect.value = newNada;
+            }
+
+            inputNada.value = '';
+            updateNadaCountBadge();
+            showNadaSuccess(`Nada "${nadaCapitalized}" berhasil ditambahkan.`);
+        } catch (err) {
+            showNadaError('Terjadi kesalahan saat memproses data.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+
     window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
-            closeCreateNadaModal();
+            const nadaModal = document.getElementById('createNadaModal');
+            if (nadaModal && !nadaModal.classList.contains('hidden')) {
+                closeCreateNadaModal();
+                return;
+            }
             closeCreateModal();
             closeEditModal();
             closeDeleteModal();
