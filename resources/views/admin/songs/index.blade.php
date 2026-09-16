@@ -86,7 +86,7 @@
                 <input type="text" 
                        name="search" 
                        value="{{ request('search') }}" 
-                       placeholder="Cari judul lagu atau pencipta..." 
+                       placeholder="Cari judul lagu atau Nomor Lagu..." 
                        class="block w-full h-12 rounded-xl border border-slate-800 bg-slate-900 pl-12 pr-4 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
             </div>
 
@@ -122,7 +122,7 @@
                 <thead class="bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
                     <tr>
                         <th scope="col" class="px-6 py-4 w-16">ID</th>
-                        <th scope="col" class="px-6 py-4">Judul Lagu &amp; Pencipta</th>
+                        <th scope="col" class="px-6 py-4">Judul Lagu &amp; Nomor Lagu</th>
                         <th scope="col" class="px-6 py-4">Kategori</th>
                         <th scope="col" class="px-6 py-4 text-center">Nada</th>
                         <th scope="col" class="px-6 py-4 text-center">Durasi</th>
@@ -237,7 +237,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="create_songsinger" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                        Pencipta <span class="text-rose-400">*</span>
+                        Nomor Lagu <span class="text-rose-400">*</span>
                     </label>
                     <input type="text" 
                            name="songsinger" 
@@ -346,7 +346,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="edit_songsinger" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                        Pencipta <span class="text-rose-400">*</span>
+                        Nomor Lagu <span class="text-rose-400">*</span>
                     </label>
                     <input type="text" 
                            name="songsinger" 
