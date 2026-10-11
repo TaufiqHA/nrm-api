@@ -2,18 +2,14 @@
 <div id="sidebar-backdrop" class="fixed inset-0 z-40 bg-black/60 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
 <!-- Sidebar Container -->
-<aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r border-slate-800 bg-slate-900 p-5 transition-transform duration-200 ease-in-out -translate-x-full lg:static lg:translate-x-0">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col justify-between border-r border-slate-800 bg-slate-900 p-5 transition-transform duration-200 ease-in-out -translate-x-full lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
     <!-- Top: Brand & Menu -->
     <div class="space-y-6">
         <!-- Brand -->
         <div class="flex items-center justify-between px-2 pt-1">
             <div class="flex items-center gap-3">
-                <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 text-white">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.633 2.163l-1.319.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
-                    </svg>
-                </div>
-                <span class="text-base font-bold text-white tracking-tight">KaraokeApp</span>
+                <img src="{{ asset('logo-nrm.png') }}" alt="NRM" class="h-9 w-9 shrink-0 object-contain">
+                <span class="text-base font-bold text-white tracking-tight">NRM</span>
             </div>
 
             <!-- Close button for mobile -->

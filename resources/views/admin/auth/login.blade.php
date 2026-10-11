@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Admin Login - Karaoke App</title>
+    <title>Admin Login - NRM</title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -19,12 +19,8 @@
     <div class="w-full max-w-sm">
         <!-- Brand / Header -->
         <div class="mb-6 text-center">
-            <div class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600 text-white mb-3">
-                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.633 2.163l-1.319.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
-                </svg>
-            </div>
-            <h1 class="text-xl font-semibold text-white">KaraokeApp Admin</h1>
+            <img src="{{ asset('logo-nrm.png') }}" alt="NRM" class="inline-block h-16 w-16 object-contain mb-3">
+            <h1 class="text-xl font-semibold text-white">NRM Admin</h1>
         </div>
 
         <!-- Login Card -->

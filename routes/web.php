@@ -7,8 +7,21 @@ use App\Http\Controllers\Admin\NadaController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\SongController;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+Route::get('/migrate', function (): string {
+    Artisan::call('migrate', ['--force' => true]);
+
+    return Artisan::output();
+});
+
+Route::get('/optimize', function (): string {
+    Artisan::call('optimize');
+
+    return Artisan::output();
+});
 
 Route::get('/', function () {
     if (Auth::check() && Auth::user()->isAdmin()) {

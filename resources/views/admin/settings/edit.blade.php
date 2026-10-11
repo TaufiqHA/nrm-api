@@ -108,68 +108,18 @@
 
                 <div class="space-y-5">
                     <!-- Banner Slot 1 -->
-                    <div class="space-y-2">
-                        <label for="applicationads1" class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                            Berkas Banner Slot 1 (Header / Atas)
-                        </label>
-                        
-                        @if ($setting->applicationads1)
-                            <div class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-800 bg-slate-950">
-                                <img src="{{ filter_var($setting->applicationads1, FILTER_VALIDATE_URL) ? $setting->applicationads1 : asset('storage/' . $setting->applicationads1) }}" 
-                                     alt="Banner Slot 1" 
-                                     class="h-12 w-20 object-cover rounded-lg border border-slate-800 bg-slate-900 shrink-0">
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-medium text-slate-200 truncate">{{ basename($setting->applicationads1) }}</p>
-                                    <label class="mt-1 inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 cursor-pointer">
-                                        <input type="checkbox" name="delete_applicationads1" value="1" class="rounded border-slate-800 bg-slate-950 text-rose-500 focus:ring-0">
-                                        <span>Hapus banner ini</span>
-                                    </label>
-                                </div>
-                            </div>
-                        @endif
-
-                        <input type="file"
-                               name="applicationads1"
-                               id="applicationads1"
-                               accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
-                               class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer rounded-xl border border-slate-800 bg-slate-950 p-1.5 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer">
-                        <p class="text-[11px] text-slate-400">JPG, PNG, WEBP, GIF, atau SVG (Maks. 2MB). Kosongkan jika tidak ingin mengubah.</p>
-                        @error('applicationads1')
-                            <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    @include('admin.settings._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationads1',
+                        'label' => 'Slot 1 — Header / Atas',
+                    ])
 
                     <!-- Banner Slot 2 -->
-                    <div class="space-y-2">
-                        <label for="applicationads2" class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                            Berkas Banner Slot 2 (Konten / Pop-up)
-                        </label>
-
-                        @if ($setting->applicationads2)
-                            <div class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-800 bg-slate-950">
-                                <img src="{{ filter_var($setting->applicationads2, FILTER_VALIDATE_URL) ? $setting->applicationads2 : asset('storage/' . $setting->applicationads2) }}" 
-                                     alt="Banner Slot 2" 
-                                     class="h-12 w-20 object-cover rounded-lg border border-slate-800 bg-slate-900 shrink-0">
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-medium text-slate-200 truncate">{{ basename($setting->applicationads2) }}</p>
-                                    <label class="mt-1 inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 cursor-pointer">
-                                        <input type="checkbox" name="delete_applicationads2" value="1" class="rounded border-slate-800 bg-slate-950 text-rose-500 focus:ring-0">
-                                        <span>Hapus banner ini</span>
-                                    </label>
-                                </div>
-                            </div>
-                        @endif
-
-                        <input type="file"
-                               name="applicationads2"
-                               id="applicationads2"
-                               accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
-                               class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer rounded-xl border border-slate-800 bg-slate-950 p-1.5 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer">
-                        <p class="text-[11px] text-slate-400">JPG, PNG, WEBP, GIF, atau SVG (Maks. 2MB). Kosongkan jika tidak ingin mengubah.</p>
-                        @error('applicationads2')
-                            <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    @include('admin.settings._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationads2',
+                        'label' => 'Slot 2 — Konten / Pop-up',
+                    ])
 
                     <!-- Status Banner Utama -->
                     <div>
@@ -190,36 +140,11 @@
 
                     <!-- Divider Banner Bawah -->
                     <div class="border-t border-slate-800/80 pt-4 space-y-4">
-                        <div class="space-y-2">
-                            <label for="applicationadsbottom" class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                                Berkas Banner Iklan Bawah (Footer)
-                            </label>
-
-                            @if ($setting->applicationadsbottom)
-                                <div class="flex items-center gap-3 p-2.5 rounded-xl border border-slate-800 bg-slate-950">
-                                    <img src="{{ filter_var($setting->applicationadsbottom, FILTER_VALIDATE_URL) ? $setting->applicationadsbottom : asset('storage/' . $setting->applicationadsbottom) }}" 
-                                         alt="Banner Bawah" 
-                                         class="h-12 w-20 object-cover rounded-lg border border-slate-800 bg-slate-900 shrink-0">
-                                    <div class="flex-1 min-w-0">
-                                        <p class="text-xs font-medium text-slate-200 truncate">{{ basename($setting->applicationadsbottom) }}</p>
-                                        <label class="mt-1 inline-flex items-center gap-1.5 text-xs text-rose-400 hover:text-rose-300 cursor-pointer">
-                                            <input type="checkbox" name="delete_applicationadsbottom" value="1" class="rounded border-slate-800 bg-slate-950 text-rose-500 focus:ring-0">
-                                            <span>Hapus banner ini</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            @endif
-
-                            <input type="file"
-                                   name="applicationadsbottom"
-                                   id="applicationadsbottom"
-                                   accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
-                                   class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 file:cursor-pointer rounded-xl border border-slate-800 bg-slate-950 p-1.5 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors cursor-pointer">
-                            <p class="text-[11px] text-slate-400">JPG, PNG, WEBP, GIF, atau SVG (Maks. 2MB). Kosongkan jika tidak ingin mengubah.</p>
-                            @error('applicationadsbottom')
-                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                            @enderror
-                        </div>
+                        @include('admin.settings._ad_slot', [
+                            'setting' => $setting,
+                            'name' => 'applicationadsbottom',
+                            'label' => 'Iklan Bawah — Footer',
+                        ])
 
                         <div>
                             <label for="applicationadsbottomactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
@@ -254,4 +179,23 @@
     </form>
 
 </div>
+
+<script>
+    // Tampilkan kolom Ad Unit ID hanya saat jenis iklan AdMob, dan kolom unggah
+    // berkas gambar hanya saat jenis iklan = gambar.
+    function nrmToggleAdType(select) {
+        var slot = select.closest('[data-ad-slot]');
+        if (!slot) return;
+        var unitBox = slot.querySelector('[data-ad-unit]');
+        var imageBox = slot.querySelector('[data-ad-image]');
+        var isImage = select.value === 'image';
+        if (unitBox) unitBox.classList.toggle('hidden', isImage);
+        if (imageBox) imageBox.classList.toggle('hidden', !isImage);
+    }
+
+    // Selaraskan tampilan saat halaman dimuat (mis. setelah validasi gagal).
+    document.querySelectorAll('[data-ad-slot] select[name$="type"]').forEach(function (select) {
+        nrmToggleAdType(select);
+    });
+</script>
 @endsection

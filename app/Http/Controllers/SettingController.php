@@ -32,9 +32,15 @@ class SettingController extends Controller
             'applicationcompany' => [$isNew ? 'required' : 'sometimes', 'string', 'max:100'],
             'applicationname' => [$isNew ? 'required' : 'sometimes', 'string', 'max:255'],
             'applicationads1' => ['nullable', 'string'],
+            'applicationads1type' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
+            'applicationads1unit' => ['nullable', 'string', 'max:255'],
             'applicationads2' => ['nullable', 'string'],
+            'applicationads2type' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
+            'applicationads2unit' => ['nullable', 'string', 'max:255'],
             'applicationadsactive' => ['sometimes', 'string', 'in:Y,N'],
             'applicationadsbottom' => ['nullable', 'string'],
+            'applicationadsbottomtype' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
+            'applicationadsbottomunit' => ['nullable', 'string', 'max:255'],
             'applicationadsbottomactive' => ['sometimes', 'string', 'in:Y,N'],
         ]);
 
@@ -74,9 +80,15 @@ class SettingController extends Controller
             'applicationcompany' => ['sometimes', 'required', 'string', 'max:100'],
             'applicationname' => ['sometimes', 'required', 'string', 'max:255'],
             'applicationads1' => ['nullable', 'string'],
+            'applicationads1type' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
+            'applicationads1unit' => ['nullable', 'string', 'max:255'],
             'applicationads2' => ['nullable', 'string'],
+            'applicationads2type' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
+            'applicationads2unit' => ['nullable', 'string', 'max:255'],
             'applicationadsactive' => ['sometimes', 'required', 'string', 'in:Y,N'],
             'applicationadsbottom' => ['nullable', 'string'],
+            'applicationadsbottomtype' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
+            'applicationadsbottomunit' => ['nullable', 'string', 'max:255'],
             'applicationadsbottomactive' => ['sometimes', 'required', 'string', 'in:Y,N'],
         ]);
 

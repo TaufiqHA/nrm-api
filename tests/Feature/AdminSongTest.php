@@ -42,7 +42,7 @@ test('admin can view songs catalog list', function () {
     $response->assertSee('Kemesraan');
     $response->assertSee('Iwan Fals');
     $response->assertSee('Pop Indo');
-    $response->assertSee('Judul Lagu & Pencipta');
+    $response->assertSee('Judul Lagu & Nomor Lagu');
     $response->assertSee('Pria');
     $response->assertSee('Tambah Lagu');
     $response->assertSee('Tambah Nada');

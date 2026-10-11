@@ -211,3 +211,63 @@ test('validation fails when uploaded file is not an image or exceeds 2MB', funct
         'applicationads2',
     ]);
 });
+
+test('admin can save admob ad type with ad unit id without uploading image', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Karaoke Digital',
+        'applicationname' => 'Karaoke AdMob',
+        'applicationads1type' => 'admob_native',
+        'applicationads1unit' => 'ca-app-pub-1234567890123456/1111111111',
+        'applicationads2type' => 'admob_banner',
+        'applicationads2unit' => 'ca-app-pub-1234567890123456/3333333333',
+        'applicationadsactive' => 'Y',
+        'applicationadsbottomtype' => 'admob_interstitial',
+        'applicationadsbottomunit' => 'ca-app-pub-1234567890123456/2222222222',
+        'applicationadsbottomactive' => 'Y',
+    ]);
+
+    $response->assertRedirect('/admin/settings');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationads1type)->toBe('admob_native')
+        ->and($setting->applicationads1unit)->toBe('ca-app-pub-1234567890123456/1111111111')
+        ->and($setting->applicationads2type)->toBe('admob_banner')
+        ->and($setting->applicationads2unit)->toBe('ca-app-pub-1234567890123456/3333333333')
+        ->and($setting->applicationadsbottomtype)->toBe('admob_interstitial')
+        ->and($setting->applicationadsbottomunit)->toBe('ca-app-pub-1234567890123456/2222222222');
+});
+
+test('admin save requires ad unit id when ad type is admob', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Karaoke Digital',
+        'applicationname' => 'Karaoke AdMob',
+        'applicationads1type' => 'admob_banner',
+        'applicationads1unit' => '',
+        'applicationadsactive' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+    ]);
+
+    $response->assertSessionHasErrors(['applicationads1unit']);
+});
+
+test('admin save rejects unknown ad type', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Karaoke Digital',
+        'applicationname' => 'Karaoke AdMob',
+        'applicationads1type' => 'unknown_type',
+        'applicationadsactive' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+    ]);
+
+    $response->assertSessionHasErrors(['applicationads1type']);
+});

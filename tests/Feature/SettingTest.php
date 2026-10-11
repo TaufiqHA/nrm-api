@@ -235,3 +235,49 @@ test('admin can delete setting by id', function () {
         'applicationid' => $setting->applicationid,
     ]);
 });
+
+test('admin can create settings with admob ad configuration via api', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'Media Prima Nusantara',
+        'applicationname' => 'Karaoke AdMob',
+        'applicationads1type' => 'admob_native',
+        'applicationads1unit' => 'ca-app-pub-1234567890123456/1111111111',
+        'applicationads2type' => 'image',
+        'applicationadsactive' => 'Y',
+        'applicationadsbottomtype' => 'admob_app_open',
+        'applicationadsbottomunit' => 'ca-app-pub-1234567890123456/2222222222',
+        'applicationadsbottomactive' => 'Y',
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJson([
+            'data' => [
+                'applicationads1type' => 'admob_native',
+                'applicationads1unit' => 'ca-app-pub-1234567890123456/1111111111',
+                'applicationadsbottomtype' => 'admob_app_open',
+            ],
+        ]);
+
+    $this->assertDatabaseHas('tb_application', [
+        'applicationads1type' => 'admob_native',
+        'applicationadsbottomtype' => 'admob_app_open',
+        'applicationadsbottomunit' => 'ca-app-pub-1234567890123456/2222222222',
+    ]);
+});
+
+test('admin settings api rejects invalid ad type', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'PT ABC',
+        'applicationname' => 'Karaoke App',
+        'applicationads1type' => 'not_a_type',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['applicationads1type']);
+});
