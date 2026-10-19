@@ -23,14 +23,19 @@ class SettingFactory extends Factory
             'applicationads1' => fake()->imageUrl(),
             'applicationads1type' => 'image',
             'applicationads1unit' => null,
+            'applicationads1active' => 'Y',
+            'applicationads1clickurl' => fake()->url(),
             'applicationads2' => fake()->imageUrl(),
             'applicationads2type' => 'image',
             'applicationads2unit' => null,
+            'applicationads2active' => 'Y',
+            'applicationads2clickurl' => fake()->url(),
             'applicationadsactive' => 'Y',
             'applicationadsbottom' => fake()->imageUrl(),
             'applicationadsbottomtype' => 'image',
             'applicationadsbottomunit' => null,
             'applicationadsbottomactive' => 'Y',
+            'applicationadsbottomclickurl' => fake()->url(),
         ];
     }
 }

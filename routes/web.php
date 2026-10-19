@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdSettingController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -45,6 +46,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         return redirect()->route('admin.dashboard');
     });
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Menu Iklan — konfigurasi banner & AdMob (dikelola terpisah dari Pengaturan).
+    Route::prefix('ads')->name('ads.')->group(function () {
+        Route::get('/', [AdSettingController::class, 'edit'])->name('edit');
+        Route::match(['put', 'patch'], '/', [AdSettingController::class, 'update'])->name('update');
+    });
 
     Route::prefix('categories')->name('categories.')->group(function () {
         Route::get('/', [CategoryController::class, 'index'])->name('index');

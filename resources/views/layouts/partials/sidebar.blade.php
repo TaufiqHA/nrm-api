@@ -64,6 +64,14 @@
                 <span class="text-xs font-mono {{ request()->routeIs('admin.nadas.*') ? 'text-blue-200' : 'text-slate-400' }}">{{ $stats['total_nadas'] ?? '' }}</span>
             </a>
 
+            <a href="{{ route('admin.ads.edit') }}" 
+               class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors {{ request()->routeIs('admin.ads.*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
+                <svg class="h-5 w-5 {{ request()->routeIs('admin.ads.*') ? 'text-white' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />
+                </svg>
+                <span>Iklan</span>
+            </a>
+
             <a href="{{ route('admin.settings.edit') }}" 
                class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors {{ request()->routeIs('admin.settings.*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                 <svg class="h-5 w-5 {{ request()->routeIs('admin.settings.*') ? 'text-white' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

@@ -9,7 +9,7 @@
     <div class="pb-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Pengaturan Aplikasi</h1>
-            <p class="text-sm text-slate-300 mt-1">Kelola informasi identitas aplikasi serta konfigurasi berkas banner dan penayangan iklan.</p>
+            <p class="text-sm text-slate-300 mt-1">Kelola informasi identitas aplikasi. Konfigurasi iklan ada di menu Iklan.</p>
         </div>
     </div>
 
@@ -39,20 +39,20 @@
     @endif
 
     <!-- Form Section -->
-    <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data" class="space-y-6 w-full">
+    <form method="POST" action="{{ route('admin.settings.update') }}" class="w-full">
         @csrf
         @method('PUT')
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">
+        <div class="rounded-2xl border border-slate-800 bg-slate-900 shadow-sm">
+            <!-- Card Header -->
+            <div class="border-b border-slate-800 px-6 py-5">
+                <h2 class="text-base font-semibold text-white">Identitas &amp; Informasi Aplikasi</h2>
+                <p class="text-xs text-slate-400 mt-1">Konfigurasi nama perusahaan pemilik dan nama tampilan aplikasi NRM.</p>
+            </div>
 
-            <!-- Card 1: Identitas & Informasi Aplikasi -->
-            <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
-                <div class="border-b border-slate-800 pb-4">
-                    <h2 class="text-base font-semibold text-white">Identitas &amp; Informasi Aplikasi</h2>
-                    <p class="text-xs text-slate-400 mt-1">Konfigurasi nama perusahaan pemilik dan nama tampilan aplikasi karaoke</p>
-                </div>
-
-                <div class="space-y-4">
+            <!-- Card Body -->
+            <div class="space-y-5 px-6 py-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label for="applicationcompany" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
                             Nama Perusahaan <span class="text-rose-400">*</span>
@@ -63,7 +63,7 @@
                                value="{{ old('applicationcompany', $setting->applicationcompany) }}"
                                required
                                maxlength="100"
-                               placeholder="Contoh: PT Karaoke Nusantara"
+                               placeholder="Contoh: PT Media Nusantara"
                                class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
                         @error('applicationcompany')
                             <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
@@ -80,7 +80,7 @@
                                value="{{ old('applicationname', $setting->applicationname) }}"
                                required
                                maxlength="255"
-                               placeholder="Contoh: Karaoke Pro App"
+                               placeholder="Contoh: Nyanyian Rohani Methodist"
                                class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
                         @error('applicationname')
                             <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
@@ -95,107 +95,22 @@
                         </svg>
                         Informasi Penggunaan
                     </p>
-                    <p>Nama aplikasi dan perusahaan akan digunakan di seluruh antarmuka sistem dan respon API aplikasi karaoke.</p>
+                    <p>Nama aplikasi dan perusahaan akan digunakan di seluruh antarmuka sistem dan respon API aplikasi NRM.</p>
                 </div>
             </div>
 
-            <!-- Card 2: Konfigurasi Iklan & Banner File Upload -->
-            <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
-                <div class="border-b border-slate-800 pb-4">
-                    <h2 class="text-base font-semibold text-white">Konfigurasi Iklan &amp; Banner</h2>
-                    <p class="text-xs text-slate-400 mt-1">Unggah berkas gambar banner slot atas, slot 2, serta banner bawah</p>
-                </div>
-
-                <div class="space-y-5">
-                    <!-- Banner Slot 1 -->
-                    @include('admin.settings._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationads1',
-                        'label' => 'Slot 1 — Header / Atas',
-                    ])
-
-                    <!-- Banner Slot 2 -->
-                    @include('admin.settings._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationads2',
-                        'label' => 'Slot 2 — Konten / Pop-up',
-                    ])
-
-                    <!-- Status Banner Utama -->
-                    <div>
-                        <label for="applicationadsactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                            Status Iklan Utama <span class="text-rose-400">*</span>
-                        </label>
-                        <select name="applicationadsactive"
-                                id="applicationadsactive"
-                                required
-                                class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-                            <option value="Y" {{ old('applicationadsactive', $setting->applicationadsactive) === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
-                            <option value="N" {{ old('applicationadsactive', $setting->applicationadsactive) === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
-                        </select>
-                        @error('applicationadsactive')
-                            <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Divider Banner Bawah -->
-                    <div class="border-t border-slate-800/80 pt-4 space-y-4">
-                        @include('admin.settings._ad_slot', [
-                            'setting' => $setting,
-                            'name' => 'applicationadsbottom',
-                            'label' => 'Iklan Bawah — Footer',
-                        ])
-
-                        <div>
-                            <label for="applicationadsbottomactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                                Status Iklan Bawah <span class="text-rose-400">*</span>
-                            </label>
-                            <select name="applicationadsbottomactive"
-                                    id="applicationadsbottomactive"
-                                    required
-                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-                                <option value="Y" {{ old('applicationadsbottomactive', $setting->applicationadsbottomactive) === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
-                                <option value="N" {{ old('applicationadsbottomactive', $setting->applicationadsbottomactive) === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
-                            </select>
-                            @error('applicationadsbottomactive')
-                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
+            <!-- Card Footer / Actions -->
+            <div class="flex items-center justify-end border-t border-slate-800 px-6 py-4">
+                <button type="submit"
+                        class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-500 active:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 cursor-pointer">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                    </svg>
+                    <span>Simpan Pengaturan</span>
+                </button>
             </div>
-        </div>
-
-        <!-- Sticky or Bottom Actions Bar -->
-        <div class="flex items-center justify-end gap-3 pt-2">
-            <button type="submit"
-                    class="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-blue-500 active:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900 cursor-pointer">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                </svg>
-                <span>Simpan Pengaturan</span>
-            </button>
         </div>
     </form>
 
 </div>
-
-<script>
-    // Tampilkan kolom Ad Unit ID hanya saat jenis iklan AdMob, dan kolom unggah
-    // berkas gambar hanya saat jenis iklan = gambar.
-    function nrmToggleAdType(select) {
-        var slot = select.closest('[data-ad-slot]');
-        if (!slot) return;
-        var unitBox = slot.querySelector('[data-ad-unit]');
-        var imageBox = slot.querySelector('[data-ad-image]');
-        var isImage = select.value === 'image';
-        if (unitBox) unitBox.classList.toggle('hidden', isImage);
-        if (imageBox) imageBox.classList.toggle('hidden', !isImage);
-    }
-
-    // Selaraskan tampilan saat halaman dimuat (mis. setelah validasi gagal).
-    document.querySelectorAll('[data-ad-slot] select[name$="type"]').forEach(function (select) {
-        nrmToggleAdType(select);
-    });
-</script>
 @endsection
