@@ -33,7 +33,7 @@ class SongController extends Controller
         }
 
         $songs = $query->orderBy('songtitle')->paginate(10)->withQueryString();
-        $categories = Category::orderBy('songcategoryname')->get();
+        $categories = Category::orderBy('sort_order')->orderBy('songcategoryname')->get();
         $nadas = Nada::orderBy('nada')->get();
 
         return view('admin.songs.index', compact('songs', 'categories', 'nadas'));

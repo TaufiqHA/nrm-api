@@ -208,3 +208,13 @@ test('authenticated user can delete a category', function () {
         'songcategoryid' => $category->songcategoryid,
     ]);
 });
+
+test('categories are ordered by sort_order instead of name', function () {
+    Category::factory()->create(['songcategoryname' => 'Zebra', 'sort_order' => 2]);
+    Category::factory()->create(['songcategoryname' => 'Alpha', 'sort_order' => 1]);
+
+    $this->getJson('/api/categories')
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.songcategoryname', 'Alpha')
+        ->assertJsonPath('data.1.songcategoryname', 'Zebra');
+});

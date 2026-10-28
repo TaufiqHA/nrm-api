@@ -20,7 +20,7 @@ class CategoryController extends Controller
             $query->where('songcategoryname', 'like', '%'.$request->input('search').'%');
         }
 
-        $categories = $query->orderBy('songcategoryname')->get();
+        $categories = $query->orderBy('sort_order')->orderBy('songcategoryname')->get();
 
         return response()->json([
             'data' => $categories,

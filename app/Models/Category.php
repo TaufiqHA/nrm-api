@@ -23,7 +23,20 @@ class Category extends Model
      */
     protected $fillable = [
         'songcategoryname',
+        'sort_order',
     ];
+
+    /**
+     * Kategori baru otomatis diletakkan di urutan paling bawah.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (Category $category) {
+            if ($category->sort_order === null) {
+                $category->sort_order = (static::max('sort_order') ?? 0) + 1;
+            }
+        });
+    }
 
     /**
      * Get the songs for the category.

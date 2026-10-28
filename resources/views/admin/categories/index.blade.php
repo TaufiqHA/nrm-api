@@ -94,6 +94,7 @@
             <table class="w-full text-left text-sm">
                 <thead class="bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
                     <tr>
+                        <th scope="col" class="px-6 py-4 w-20 text-center">Urutan</th>
                         <th scope="col" class="px-6 py-4 w-20">ID</th>
                         <th scope="col" class="px-6 py-4">Nama Kategori</th>
                         <th scope="col" class="px-6 py-4 text-center">Jumlah Lagu</th>
@@ -104,6 +105,9 @@
                 <tbody class="divide-y divide-slate-800/60">
                     @forelse ($categories as $category)
                         <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-6 py-4 text-center font-mono font-semibold text-slate-300">
+                                {{ $category->sort_order }}
+                            </td>
                             <td class="px-6 py-4 font-mono text-slate-400">
                                 #{{ $category->songcategoryid }}
                             </td>
@@ -120,6 +124,34 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="inline-flex items-center gap-2">
+                                    <!-- Move Up -->
+                                    <form method="POST" action="{{ route('admin.categories.move', $category) }}" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="direction" value="up">
+                                        <button type="submit"
+                                                class="p-2 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                title="Naikkan Urutan"
+                                                @disabled($category->sort_order <= $minSortOrder)>
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
+                                            </svg>
+                                        </button>
+                                    </form>
+
+                                    <!-- Move Down -->
+                                    <form method="POST" action="{{ route('admin.categories.move', $category) }}" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="direction" value="down">
+                                        <button type="submit"
+                                                class="p-2 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors disabled:opacity-30 disabled:hover:text-slate-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
+                                                title="Turunkan Urutan"
+                                                @disabled($category->sort_order >= $maxSortOrder)>
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                        </button>
+                                    </form>
+
                                     <!-- Edit Button -->
                                     <button type="button" 
                                             onclick="openEditModal({{ $category->songcategoryid }}, '{{ addslashes($category->songcategoryname) }}')"
@@ -144,7 +176,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-slate-400">
+                            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center justify-center space-y-2">
                                     <svg class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -23,9 +24,70 @@ class CategoryController extends Controller
             $query->where('songcategoryname', 'like', "%{$search}%");
         }
 
-        $categories = $query->orderBy('songcategoryname')->paginate(10)->withQueryString();
+        $categories = $query->orderBy('sort_order')->orderBy('songcategoryname')->paginate(10)->withQueryString();
 
-        return view('admin.categories.index', compact('categories'));
+        $minSortOrder = Category::min('sort_order');
+        $maxSortOrder = Category::max('sort_order');
+
+        return view('admin.categories.index', compact('categories', 'minSortOrder', 'maxSortOrder'));
+    }
+
+    /**
+     * Move the category up or down in the sort order.
+     */
+    public function move(Request $request, Category $category): RedirectResponse
+    {
+        $validated = $request->validate([
+            'direction' => ['required', 'in:up,down'],
+        ]);
+
+        $direction = $validated['direction'];
+        $moved = false;
+
+        DB::transaction(function () use ($category, $direction, &$moved) {
+            $categories = Category::orderBy('sort_order')
+                ->orderBy('songcategoryname')
+                ->orderBy('songcategoryid')
+                ->get()
+                ->values();
+
+            $index = $categories->search(
+                fn (Category $item) => $item->songcategoryid === $category->songcategoryid
+            );
+
+            if ($index === false) {
+                return;
+            }
+
+            $targetIndex = $direction === 'up' ? $index - 1 : $index + 1;
+
+            if ($targetIndex < 0 || $targetIndex >= $categories->count()) {
+                return;
+            }
+
+            // Normalisasi dulu agar penukaran tetap benar walau ada sort_order duplikat.
+            foreach ($categories as $position => $item) {
+                $item->sort_order = $position + 1;
+                $item->save();
+            }
+
+            $current = $categories[$index];
+            $target = $categories[$targetIndex];
+
+            $current->sort_order = $targetIndex + 1;
+            $current->save();
+
+            $target->sort_order = $index + 1;
+            $target->save();
+
+            $moved = true;
+        });
+
+        if (! $moved) {
+            return back()->with('error', 'Kategori sudah berada di urutan paling '.($direction === 'up' ? 'atas' : 'bawah').'.');
+        }
+
+        return back()->with('success', 'Urutan kategori berhasil diperbarui.');
     }
 
     /**

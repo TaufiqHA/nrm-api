@@ -141,3 +141,62 @@ test('admin cannot delete a category that has associated songs', function () {
         'songcategoryid' => $category->songcategoryid,
     ]);
 });
+
+test('new category is placed at the bottom of the order', function () {
+    $admin = User::factory()->admin()->create();
+
+    Category::factory()->create(['songcategoryname' => 'First']);
+    Category::factory()->create(['songcategoryname' => 'Second']);
+
+    $this->actingAs($admin)->post('/admin/categories', [
+        'songcategoryname' => 'Third',
+    ]);
+
+    $third = Category::where('songcategoryname', 'Third')->first();
+
+    expect($third)->not->toBeNull()
+        ->and($third->sort_order)->toBe(3);
+});
+
+test('admin can move a category up and down', function () {
+    $admin = User::factory()->admin()->create();
+
+    $first = Category::factory()->create(['songcategoryname' => 'Alpha']);
+    $second = Category::factory()->create(['songcategoryname' => 'Beta']);
+    $third = Category::factory()->create(['songcategoryname' => 'Gamma']);
+
+    $this->actingAs($admin)
+        ->post("/admin/categories/{$third->songcategoryid}/move", ['direction' => 'up'])
+        ->assertRedirect();
+
+    expect($first->fresh()->sort_order)->toBe(1)
+        ->and($third->fresh()->sort_order)->toBe(2)
+        ->and($second->fresh()->sort_order)->toBe(3);
+
+    $this->actingAs($admin)
+        ->post("/admin/categories/{$third->songcategoryid}/move", ['direction' => 'up'])
+        ->assertRedirect();
+
+    expect($third->fresh()->sort_order)->toBe(1)
+        ->and($first->fresh()->sort_order)->toBe(2);
+});
+
+test('moving a category beyond the boundary keeps the order', function () {
+    $admin = User::factory()->admin()->create();
+
+    $first = Category::factory()->create(['songcategoryname' => 'Alpha']);
+    $second = Category::factory()->create(['songcategoryname' => 'Beta']);
+
+    $this->actingAs($admin)
+        ->post("/admin/categories/{$first->songcategoryid}/move", ['direction' => 'up'])
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    $this->actingAs($admin)
+        ->post("/admin/categories/{$second->songcategoryid}/move", ['direction' => 'down'])
+        ->assertRedirect()
+        ->assertSessionHas('error');
+
+    expect($first->fresh()->sort_order)->toBe(1)
+        ->and($second->fresh()->sort_order)->toBe(2);
+});
