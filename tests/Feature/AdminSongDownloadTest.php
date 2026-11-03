@@ -196,6 +196,22 @@ test('song list displays the youtube url instead of the local file url', functio
         ->assertDontSee('storage/songs/1/audio.mp3');
 });
 
+test('download all can be triggered from the browser with a get request', function () {
+    Queue::fake();
+
+    $admin = songDownloadAdmin();
+    Song::factory()->create([
+        'songyoutubeurl' => 'https://youtu.be/never000001',
+        'download_status' => null,
+    ]);
+
+    $this->actingAs($admin)->get('/admin/songs/download-all')
+        ->assertRedirect('/admin/songs')
+        ->assertSessionHas('success');
+
+    Queue::assertPushed(DownloadSongMedia::class, 1);
+});
+
 test('regular user cannot trigger download all', function () {
     $user = User::factory()->create(['role' => UserRole::User]);
 
