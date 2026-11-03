@@ -32,7 +32,11 @@ class SongController extends Controller
             $query->where('songcategory', $request->input('category'));
         }
 
-        $songs = $query->orderBy('songtitle')->paginate(10)->withQueryString();
+        $songs = $query
+            ->orderByRaw('CAST(songsinger AS UNSIGNED) ASC')
+            ->orderBy('songtitle')
+            ->paginate(10)
+            ->withQueryString();
         $categories = Category::orderBy('sort_order')->orderBy('songcategoryname')->get();
         $nadas = Nada::orderBy('nada')->get();
 

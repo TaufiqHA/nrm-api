@@ -306,3 +306,19 @@ test('authenticated user can delete a song', function () {
         'songid' => $song->songid,
     ]);
 });
+
+test('guest can read song lyric from the songs endpoint', function () {
+    $category = Category::factory()->create();
+    $lyric = "Ayat 1\nMarilah orang berdosa datang kepada Tuhan";
+
+    Song::factory()->create([
+        'songtitle' => 'Marilah Orang Berdosa',
+        'songcategory' => $category->songcategoryid,
+        'songlyric' => $lyric,
+    ]);
+
+    $response = $this->getJson('/api/songs');
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.0.songlyric', $lyric);
+});

@@ -25,6 +25,7 @@ class Song extends Model
         'songtitle',
         'songsinger',
         'songurl',
+        'songlyric',
         'songcategory',
         'songnada',
         'songduration',

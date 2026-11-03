@@ -518,6 +518,7 @@ Accept: application/json
       "songtitle": "Separuh Nafas",
       "songsinger": "Dewa 19",
       "songurl": "https://storage.example.com/karaoke/separuh-nafas.mp4",
+      "songlyric": "Ayat 1\nSeparuh nafasku...",
       "songcategory": 1,
       "songnada": "Am",
       "songduration": "4:30",
@@ -556,6 +557,7 @@ Accept: application/json
     "songtitle": "Separuh Nafas",
     "songsinger": "Dewa 19",
     "songurl": "https://storage.example.com/karaoke/separuh-nafas.mp4",
+    "songlyric": "Ayat 1\nSeparuh nafasku...",
     "songcategory": 1,
     "songnada": "Am",
     "songduration": "4:30",
@@ -600,6 +602,7 @@ Accept: application/json
   "songtitle": "Hati-Hati di Jalan",
   "songsinger": "Tulus",
   "songurl": "https://storage.example.com/karaoke/hati-hati-di-jalan.mp4",
+  "songlyric": "Ayat 1\nHati-hati di jalan...",
   "songcategory": 1,
   "songnada": "C",
   "songduration": "4:02"
@@ -612,6 +615,7 @@ Accept: application/json
 | `songtitle` | string | Ya | Judul lagu (maksimal 255 karakter). |
 | `songsinger` | string | Ya | Nama penyanyi/artis (maksimal 255 karakter). |
 | `songurl` | string | Ya | URL file video/audio karaoke. |
+| `songlyric` | string | Tidak | Teks lirik lagu untuk mode Teks Only. Baris kosong memisahkan bait. |
 | `songcategory` | integer | Ya | ID kategori (harus ada di tabel `categories`). |
 | `songnada` | string | Tidak | Nada dasar lagu (maksimal 10 karakter, contoh: `C`, `Am`). |
 | `songduration` | string | Tidak | Durasi lagu (maksimal 5 karakter, contoh: `4:02`). |

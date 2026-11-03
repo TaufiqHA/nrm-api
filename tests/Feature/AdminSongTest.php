@@ -198,3 +198,29 @@ test('admin can delete a song', function () {
         'songid' => $song->songid,
     ]);
 });
+
+test('admin song list is ordered by song number instead of song id', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+
+    Song::factory()->create([
+        'songtitle' => 'Lagu Sepuluh',
+        'songsinger' => '10',
+        'songcategory' => $category->songcategoryid,
+    ]);
+    Song::factory()->create([
+        'songtitle' => 'Lagu Dua',
+        'songsinger' => '2',
+        'songcategory' => $category->songcategoryid,
+    ]);
+    Song::factory()->create([
+        'songtitle' => 'Lagu Satu',
+        'songsinger' => '1',
+        'songcategory' => $category->songcategoryid,
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/songs');
+
+    $response->assertStatus(200);
+    $response->assertSeeInOrder(['Lagu Satu', 'Lagu Dua', 'Lagu Sepuluh']);
+});

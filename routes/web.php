@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdSettingController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\LyricController;
 use App\Http\Controllers\Admin\NadaController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
@@ -66,6 +67,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/', [SongController::class, 'store'])->name('store');
         Route::match(['put', 'patch'], '/{song}', [SongController::class, 'update'])->name('update');
         Route::delete('/{song}', [SongController::class, 'destroy'])->name('destroy');
+    });
+
+    // Menu Lirik — mengelola teks lirik untuk mode Teks Only di aplikasi.
+    Route::prefix('lyrics')->name('lyrics.')->group(function () {
+        Route::get('/', [LyricController::class, 'index'])->name('index');
+        Route::match(['put', 'patch'], '/{song}', [LyricController::class, 'update'])->name('update');
     });
 
     Route::prefix('nadas')->name('nadas.')->group(function () {

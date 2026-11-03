@@ -21,20 +21,6 @@
 
     <!-- Main Content Area -->
     <div class="flex flex-1 flex-col min-w-0 min-h-screen">
-        <!-- Topbar -->
-        <header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-slate-800 bg-slate-900/90 px-5 sm:px-7 backdrop-blur-sm">
-            <div class="flex items-center gap-3">
-                <button type="button" 
-                        onclick="toggleSidebar()" 
-                        class="p-2 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white lg:hidden"
-                        aria-label="Toggle menu">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                    </svg>
-                </button>
-            </div>
-        </header>
-
         <!-- Content (File Terpisah) -->
         <main class="flex-1 p-5 sm:p-7 lg:p-8 w-full">
             @yield('content')
