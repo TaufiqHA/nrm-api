@@ -39,6 +39,32 @@ class YouTubeDownloader
     }
 
     /**
+     * Resolve the value for yt-dlp's --ffmpeg-location option.
+     *
+     * yt-dlp expects a directory containing both ffmpeg and ffprobe. When the
+     * configured value points to the ffmpeg binary, use its parent directory.
+     * Bare command names are left for yt-dlp to resolve through PATH.
+     */
+    public static function resolveFfmpegLocation(?string $configuredPath): ?string
+    {
+        $configuredPath = trim((string) $configuredPath);
+
+        if ($configuredPath === '') {
+            return null;
+        }
+
+        if (is_file($configuredPath)) {
+            return dirname($configuredPath);
+        }
+
+        if (is_dir($configuredPath)) {
+            return $configuredPath;
+        }
+
+        return null;
+    }
+
+    /**
      * Run yt-dlp with the given format options.
      *
      * @param  list<string>  $formatOptions
@@ -53,13 +79,20 @@ class YouTubeDownloader
             File::delete($destination);
         }
 
-        $command = array_merge([
+        $command = [
             (string) config('youtube.yt_dlp_path', 'yt-dlp'),
             '--no-playlist',
             '--newline',
             '--no-warnings',
-            '--ffmpeg-location='.(string) config('youtube.ffmpeg_path', 'ffmpeg'),
-        ], $formatOptions, [
+        ];
+
+        $ffmpegLocation = self::resolveFfmpegLocation(config('youtube.ffmpeg_path'));
+
+        if ($ffmpegLocation !== null) {
+            $command[] = '--ffmpeg-location='.$ffmpegLocation;
+        }
+
+        $command = array_merge($command, $formatOptions, [
             '-o', $destination,
             '--', $url,
         ]);

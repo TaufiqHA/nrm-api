@@ -8,7 +8,10 @@ return [
     |--------------------------------------------------------------------------
     |
     | Lokasi executable yt-dlp dan ffmpeg yang dipakai untuk mengunduh media
-    | dari YouTube. ffmpeg dibutuhkan untuk ekstraksi audio MP3 dan merge MP4.
+    | dari YouTube. FFMPEG_PATH boleh berupa direktori (contoh: /usr/bin) atau
+    | path binary (contoh: /usr/bin/ffmpeg) — yt-dlp membutuhkan ffmpeg dan
+    | ffprobe di direktori yang sama. Nama command tanpa path akan dicari
+    | melalui PATH.
     |
     */
 
