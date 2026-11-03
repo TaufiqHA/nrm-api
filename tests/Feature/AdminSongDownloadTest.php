@@ -7,6 +7,7 @@ use App\Models\Song;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -131,6 +132,7 @@ test('updating to a different youtube link queues a new download', function () {
 
 test('download all only queues youtube songs that are not completed yet', function () {
     Queue::fake();
+    Storage::fake('public');
 
     $admin = songDownloadAdmin();
 
@@ -146,6 +148,8 @@ test('download all only queues youtube songs that are not completed yet', functi
         'songyoutubeurl' => 'https://youtu.be/completed01',
         'download_status' => 'completed',
     ]);
+    Storage::disk('public')->put("songs/{$completed->songid}/audio.mp3", 'audio');
+
     $processing = Song::factory()->create([
         'songyoutubeurl' => 'https://youtu.be/processing1',
         'download_status' => 'processing',
@@ -167,20 +171,57 @@ test('download all only queues youtube songs that are not completed yet', functi
     Queue::assertNotPushed(DownloadSongMedia::class, fn (DownloadSongMedia $job) => $job->songId === $local->songid);
 });
 
-test('download all reports when there is nothing to download', function () {
+test('download all reports when every song already has a local file', function () {
     Queue::fake();
+    Storage::fake('public');
 
     $admin = songDownloadAdmin();
-    Song::factory()->create([
+    $song = Song::factory()->create([
         'songyoutubeurl' => 'https://youtu.be/completed01',
+        'download_status' => 'completed',
+    ]);
+    Storage::disk('public')->put("songs/{$song->songid}/audio.mp3", 'audio');
+
+    $this->actingAs($admin)->post('/admin/songs/download-all')
+        ->assertRedirect('/admin/songs')
+        ->assertSessionHas('success', 'Semua lagu sudah memiliki file lokal. Gunakan ?force=1 untuk mengunduh ulang.');
+
+    Queue::assertNotPushed(DownloadSongMedia::class);
+});
+
+test('download all re-downloads a completed song when its local file is missing', function () {
+    Queue::fake();
+    Storage::fake('public');
+
+    $admin = songDownloadAdmin();
+    $song = Song::factory()->create([
+        'songyoutubeurl' => 'https://youtu.be/completed02',
         'download_status' => 'completed',
     ]);
 
     $this->actingAs($admin)->post('/admin/songs/download-all')
         ->assertRedirect('/admin/songs')
-        ->assertSessionHas('success', 'Tidak ada lagu yang perlu diunduh.');
+        ->assertSessionHas('success', '1 lagu berhasil dimasukkan ke antrean unduhan.');
 
-    Queue::assertNotPushed(DownloadSongMedia::class);
+    Queue::assertPushed(DownloadSongMedia::class, fn (DownloadSongMedia $job) => $job->songId === $song->songid);
+});
+
+test('download all with force re-queues songs that already have a local file', function () {
+    Queue::fake();
+    Storage::fake('public');
+
+    $admin = songDownloadAdmin();
+    $song = Song::factory()->create([
+        'songyoutubeurl' => 'https://youtu.be/force000001',
+        'download_status' => 'completed',
+    ]);
+    Storage::disk('public')->put("songs/{$song->songid}/audio.mp3", 'audio');
+
+    $this->actingAs($admin)->post('/admin/songs/download-all?force=1')
+        ->assertRedirect('/admin/songs')
+        ->assertSessionHas('success', '1 lagu berhasil dimasukkan ke antrean unduhan.');
+
+    Queue::assertPushed(DownloadSongMedia::class, fn (DownloadSongMedia $job) => $job->songId === $song->songid);
 });
 
 test('song list displays the youtube url instead of the local file url', function () {
@@ -198,6 +239,7 @@ test('song list displays the youtube url instead of the local file url', functio
 
 test('download all can be triggered from the browser with a get request', function () {
     Queue::fake();
+    Storage::fake('public');
 
     $admin = songDownloadAdmin();
     Song::factory()->create([

@@ -9,6 +9,7 @@ use App\Models\Nada;
 use App\Models\Song;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -128,13 +129,15 @@ class SongController extends Controller
     /**
      * Queue downloads for every song that still needs local media.
      */
-    public function downloadAll(): RedirectResponse
+    public function downloadAll(Request $request): RedirectResponse
     {
+        $force = $request->boolean('force');
+
         $songs = Song::query()
             ->whereNotNull('songyoutubeurl')
             ->where(function ($query) {
                 $query->whereNull('download_status')
-                    ->orWhere('download_status', 'failed');
+                    ->orWhereNotIn('download_status', ['pending', 'processing']);
             })
             ->get();
 
@@ -143,10 +146,28 @@ class SongController extends Controller
                 ->with('success', 'Tidak ada lagu yang perlu diunduh.');
         }
 
-        $songs->each(fn (Song $song) => $this->queueMediaDownload($song, force: true));
+        $disk = Storage::disk((string) config('youtube.disk', 'public'));
+        $folder = trim((string) config('youtube.folder', 'songs'), '/');
+        $queued = 0;
+
+        foreach ($songs as $song) {
+            $audioPath = $folder.'/'.$song->songid.'/audio.mp3';
+
+            if (! $force && $disk->exists($audioPath)) {
+                continue;
+            }
+
+            $this->queueMediaDownload($song, force: true);
+            $queued++;
+        }
+
+        if ($queued === 0) {
+            return redirect()->route('admin.songs.index')
+                ->with('success', 'Semua lagu sudah memiliki file lokal. Gunakan ?force=1 untuk mengunduh ulang.');
+        }
 
         return redirect()->route('admin.songs.index')
-            ->with('success', "{$songs->count()} lagu berhasil dimasukkan ke antrean unduhan.");
+            ->with('success', "{$queued} lagu berhasil dimasukkan ke antrean unduhan.");
     }
 
     /**
