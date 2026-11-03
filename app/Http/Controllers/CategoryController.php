@@ -34,6 +34,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'songcategoryname' => ['required', 'string', 'max:255', 'unique:categories,songcategoryname'],
+            'icon' => ['nullable', 'string', Rule::in(array_keys(config('category_icons')))],
         ]);
 
         $category = Category::create($validated);
@@ -66,6 +67,7 @@ class CategoryController extends Controller
                 'max:255',
                 Rule::unique('categories', 'songcategoryname')->ignore($category->songcategoryid, 'songcategoryid'),
             ],
+            'icon' => ['nullable', 'string', Rule::in(array_keys(config('category_icons')))],
         ]);
 
         $category->update($validated);

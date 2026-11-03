@@ -5,6 +5,8 @@ use App\Models\Category;
 use App\Models\Song;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -199,4 +201,136 @@ test('moving a category beyond the boundary keeps the order', function () {
 
     expect($first->fresh()->sort_order)->toBe(1)
         ->and($second->fresh()->sort_order)->toBe(2);
+});
+
+test('admin can store a category with a builtin icon', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->post('/admin/categories', [
+        'songcategoryname' => 'Piano Rohani',
+        'icon_source' => 'builtin',
+        'icon' => 'piano',
+    ]);
+
+    $response->assertRedirect('/admin/categories');
+    $response->assertSessionHas('success');
+
+    $this->assertDatabaseHas('categories', [
+        'songcategoryname' => 'Piano Rohani',
+        'icon' => 'piano',
+        'icon_image' => null,
+    ]);
+});
+
+test('category creation rejects an unknown icon key', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->from('/admin/categories')->post('/admin/categories', [
+        'songcategoryname' => 'Kategori Aneh',
+        'icon_source' => 'builtin',
+        'icon' => 'icon-tidak-ada',
+    ]);
+
+    $response->assertRedirect('/admin/categories');
+    $response->assertSessionHasErrors(['icon']);
+});
+
+test('admin can upload a custom icon for a category', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->post('/admin/categories', [
+        'songcategoryname' => 'Kategori Custom',
+        'icon_source' => 'image',
+        'icon_file' => UploadedFile::fake()->image('ikon.png', 64, 64),
+    ]);
+
+    $response->assertRedirect('/admin/categories');
+    $response->assertSessionHas('success');
+
+    $category = Category::where('songcategoryname', 'Kategori Custom')->first();
+
+    expect($category)->not->toBeNull()
+        ->and($category->icon)->toBeNull()
+        ->and($category->icon_image)->toStartWith('category-icons/');
+
+    Storage::disk('public')->assertExists($category->icon_image);
+    expect($category->icon_url)->not->toBeNull();
+});
+
+test('replacing or clearing a custom icon removes the old file', function () {
+    Storage::fake('public');
+
+    Storage::disk('public')->put('category-icons/lama.png', 'old');
+
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Kategori Lama',
+        'icon_image' => 'category-icons/lama.png',
+    ]);
+
+    $this->actingAs($admin)->put("/admin/categories/{$category->songcategoryid}", [
+        'songcategoryname' => 'Kategori Lama',
+        'icon_source' => 'image',
+        'icon_file' => UploadedFile::fake()->image('baru.png', 64, 64),
+    ])->assertRedirect('/admin/categories');
+
+    Storage::disk('public')->assertMissing('category-icons/lama.png');
+
+    $updated = $category->fresh();
+    expect($updated->icon_image)->not->toBe('category-icons/lama.png');
+    Storage::disk('public')->assertExists($updated->icon_image);
+
+    $this->actingAs($admin)->put("/admin/categories/{$category->songcategoryid}", [
+        'songcategoryname' => 'Kategori Lama',
+        'icon_source' => 'auto',
+    ])->assertRedirect('/admin/categories');
+
+    $cleared = $category->fresh();
+    expect($cleared->icon)->toBeNull()
+        ->and($cleared->icon_image)->toBeNull();
+    Storage::disk('public')->assertMissing($updated->icon_image);
+});
+
+test('deleting a category removes its custom icon file', function () {
+    Storage::fake('public');
+
+    Storage::disk('public')->put('category-icons/hapus.png', 'old');
+
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Kategori Hapus',
+        'icon_image' => 'category-icons/hapus.png',
+    ]);
+
+    $this->actingAs($admin)
+        ->delete("/admin/categories/{$category->songcategoryid}")
+        ->assertRedirect('/admin/categories');
+
+    Storage::disk('public')->assertMissing('category-icons/hapus.png');
+});
+
+test('admin can remove an uploaded icon without changing the source', function () {
+    Storage::fake('public');
+
+    Storage::disk('public')->put('category-icons/hapus-saja.png', 'old');
+
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Kategori Ikon',
+        'icon_image' => 'category-icons/hapus-saja.png',
+    ]);
+
+    $this->actingAs($admin)->put("/admin/categories/{$category->songcategoryid}", [
+        'songcategoryname' => 'Kategori Ikon',
+        'icon_source' => 'image',
+        'remove_icon' => '1',
+    ])->assertRedirect('/admin/categories');
+
+    $updated = $category->fresh();
+    expect($updated->icon_image)->toBeNull()
+        ->and($updated->icon)->toBeNull();
+
+    Storage::disk('public')->assertMissing('category-icons/hapus-saja.png');
 });

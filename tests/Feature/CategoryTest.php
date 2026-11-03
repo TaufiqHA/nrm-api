@@ -218,3 +218,47 @@ test('categories are ordered by sort_order instead of name', function () {
         ->assertJsonPath('data.0.songcategoryname', 'Alpha')
         ->assertJsonPath('data.1.songcategoryname', 'Zebra');
 });
+
+test('category responses include icon fields', function () {
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Piano',
+        'icon' => 'piano',
+    ]);
+
+    $this->getJson('/api/categories')
+        ->assertStatus(200)
+        ->assertJsonPath('data.0.icon', 'piano')
+        ->assertJsonPath('data.0.icon_image', null)
+        ->assertJsonPath('data.0.icon_url', null);
+
+    $this->getJson("/api/categories/{$category->songcategoryid}")
+        ->assertStatus(200)
+        ->assertJsonPath('data.icon', 'piano');
+});
+
+test('authenticated user can create a category with an icon', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/categories', [
+        'songcategoryname' => 'Organ',
+        'icon' => 'piano',
+    ])->assertStatus(201)
+        ->assertJsonPath('data.icon', 'piano');
+
+    $this->assertDatabaseHas('categories', [
+        'songcategoryname' => 'Organ',
+        'icon' => 'piano',
+    ]);
+});
+
+test('category creation rejects an unknown icon key', function () {
+    $user = User::factory()->create();
+    Sanctum::actingAs($user);
+
+    $this->postJson('/api/categories', [
+        'songcategoryname' => 'Aneh',
+        'icon' => 'bukan-icon',
+    ])->assertStatus(422)
+        ->assertJsonValidationErrors(['icon']);
+});

@@ -96,6 +96,7 @@
                     <tr>
                         <th scope="col" class="px-6 py-4 w-20 text-center">Urutan</th>
                         <th scope="col" class="px-6 py-4 w-20">ID</th>
+                        <th scope="col" class="px-6 py-4 w-20 text-center">Ikon</th>
                         <th scope="col" class="px-6 py-4">Nama Kategori</th>
                         <th scope="col" class="px-6 py-4 text-center">Jumlah Lagu</th>
                         <th scope="col" class="px-6 py-4">Dibuat Pada</th>
@@ -110,6 +111,17 @@
                             </td>
                             <td class="px-6 py-4 font-mono text-slate-400">
                                 #{{ $category->songcategoryid }}
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="mx-auto flex h-9 w-9 items-center justify-center rounded-lg border border-slate-800 bg-slate-950 text-slate-200">
+                                    @if ($category->icon_url)
+                                        <img src="{{ $category->icon_url }}" alt="Ikon {{ $category->songcategoryname }}" class="h-6 w-6 object-contain">
+                                    @elseif ($category->icon)
+                                        <span class="material-symbols-rounded text-xl">{{ $category->icon }}</span>
+                                    @else
+                                        <span class="material-symbols-rounded text-xl text-slate-500" title="Otomatis">auto_awesome</span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 font-semibold text-white">
                                 {{ $category->songcategoryname }}
@@ -154,7 +166,7 @@
 
                                     <!-- Edit Button -->
                                     <button type="button" 
-                                            onclick="openEditModal({{ $category->songcategoryid }}, '{{ addslashes($category->songcategoryname) }}')"
+                                            onclick="openEditModal({{ $category->songcategoryid }}, @js($category->songcategoryname), @js($category->icon), @js($category->icon_url))"
                                             class="p-2 rounded-lg text-slate-400 hover:text-blue-400 hover:bg-slate-800 transition-colors"
                                             title="Edit Kategori">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
@@ -176,7 +188,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center justify-center space-y-2">
                                     <svg class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
@@ -205,7 +217,7 @@
 
 <!-- Create Category Modal -->
 <div id="createModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-sm sm:max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6 shadow-xl space-y-4">
+    <div class="w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6 shadow-xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <h3 class="text-base font-semibold text-white">Tambah Kategori Baru</h3>
             <button type="button" onclick="closeCreateModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
@@ -215,7 +227,7 @@
             </button>
         </div>
 
-        <form method="POST" action="{{ route('admin.categories.store') }}" class="space-y-4">
+        <form method="POST" action="{{ route('admin.categories.store') }}" enctype="multipart/form-data" class="space-y-4">
             @csrf
             <div>
                 <label for="create_category_name" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
@@ -228,6 +240,8 @@
                        placeholder="Contoh: Pop, Rock, Dangdut"
                        class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
             </div>
+
+            @include('admin.categories._icon_picker', ['prefix' => 'create'])
 
             <div class="flex items-center justify-end gap-3 pt-2">
                 <button type="button" 
@@ -246,7 +260,7 @@
 
 <!-- Edit Category Modal -->
 <div id="editModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-    <div class="w-full max-w-sm sm:max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6 shadow-xl space-y-4">
+    <div class="w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:p-6 shadow-xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <h3 class="text-base font-semibold text-white">Edit Kategori</h3>
             <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">
@@ -256,7 +270,7 @@
             </button>
         </div>
 
-        <form id="editForm" method="POST" action="" class="space-y-4">
+        <form id="editForm" method="POST" action="" enctype="multipart/form-data" class="space-y-4">
             @csrf
             @method('PUT')
             <div>
@@ -269,6 +283,8 @@
                        required 
                        class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
             </div>
+
+            @include('admin.categories._icon_picker', ['prefix' => 'edit'])
 
             <div class="flex items-center justify-end gap-3 pt-2">
                 <button type="button" 
@@ -325,7 +341,111 @@
 </div>
 
 <script>
+    const ICON_SOURCE_ACTIVE = ['border-blue-500', 'bg-blue-600/20', 'text-blue-300'];
+    const ICON_SOURCE_IDLE = ['border-slate-800', 'bg-slate-950', 'text-slate-400'];
+    const ICON_KEY_ACTIVE = ['border-blue-500', 'bg-blue-600/20', 'text-blue-300'];
+    const ICON_KEY_IDLE = ['border-transparent', 'text-slate-300'];
+
+    function getIconPicker(prefix) {
+        return document.querySelector(`[data-icon-picker][data-prefix="${prefix}"]`);
+    }
+
+    function toggleClasses(element, classes, enabled) {
+        classes.forEach((name) => element.classList.toggle(name, enabled));
+    }
+
+    function setIconSource(prefix, source) {
+        const root = getIconPicker(prefix);
+        if (!root) return;
+
+        const input = root.querySelector(`#${prefix}_icon_source`);
+        if (input) input.value = source;
+
+        root.querySelectorAll('[data-icon-source]').forEach((button) => {
+            const active = button.dataset.iconSource === source;
+            toggleClasses(button, ICON_SOURCE_ACTIVE, active);
+            toggleClasses(button, ICON_SOURCE_IDLE, !active);
+        });
+
+        root.querySelectorAll('[data-icon-section]').forEach((section) => {
+            section.classList.toggle('hidden', section.dataset.iconSection !== source);
+        });
+    }
+
+    function setIconKey(prefix, key) {
+        const root = getIconPicker(prefix);
+        if (!root) return;
+
+        const input = root.querySelector(`#${prefix}_icon`);
+        if (input) input.value = key || '';
+
+        let labelText = '';
+        root.querySelectorAll('[data-icon-key]').forEach((button) => {
+            const active = button.dataset.iconKey === key;
+            toggleClasses(button, ICON_KEY_ACTIVE, active);
+            toggleClasses(button, ICON_KEY_IDLE, !active);
+            if (active) labelText = button.getAttribute('title') || key;
+        });
+
+        const label = root.querySelector('[data-icon-key-label]');
+        if (label) label.textContent = labelText;
+    }
+
+    function previewIconFile(prefix) {
+        const root = getIconPicker(prefix);
+        if (!root) return;
+
+        const input = root.querySelector(`#${prefix}_icon_file`);
+        const preview = root.querySelector('[data-icon-preview]');
+        if (!preview) return;
+
+        const image = preview.querySelector('img');
+        if (input && input.files && input.files[0]) {
+            image.src = URL.createObjectURL(input.files[0]);
+            preview.classList.remove('hidden');
+            preview.classList.add('flex');
+        } else {
+            image.removeAttribute('src');
+            preview.classList.add('hidden');
+            preview.classList.remove('flex');
+        }
+    }
+
+    function resetIconPicker(prefix, source, iconKey, imageUrl) {
+        setIconSource(prefix, source || 'auto');
+        setIconKey(prefix, iconKey || '');
+
+        const root = getIconPicker(prefix);
+        if (!root) return;
+
+        const file = root.querySelector(`#${prefix}_icon_file`);
+        if (file) file.value = '';
+
+        const preview = root.querySelector('[data-icon-preview]');
+        if (preview) {
+            const image = preview.querySelector('img');
+            if (imageUrl) {
+                image.src = imageUrl;
+                preview.classList.remove('hidden');
+                preview.classList.add('flex');
+            } else {
+                image.removeAttribute('src');
+                preview.classList.add('hidden');
+                preview.classList.remove('flex');
+            }
+        }
+
+        const removeWrap = root.querySelector('[data-icon-remove]');
+        if (removeWrap) {
+            const checkbox = removeWrap.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = false;
+            removeWrap.classList.toggle('hidden', !imageUrl);
+            removeWrap.classList.toggle('flex', !!imageUrl);
+        }
+    }
+
     function openCreateModal() {
+        resetIconPicker('create', 'auto', '', null);
         document.getElementById('createModal').classList.remove('hidden');
         document.getElementById('create_category_name').focus();
     }
@@ -334,11 +454,15 @@
         document.getElementById('createModal').classList.add('hidden');
     }
 
-    function openEditModal(id, name) {
+    function openEditModal(id, name, icon, iconUrl) {
         const form = document.getElementById('editForm');
         form.action = `/admin/categories/${id}`;
         const input = document.getElementById('edit_category_name');
         input.value = name;
+
+        const source = iconUrl ? 'image' : (icon ? 'builtin' : 'auto');
+        resetIconPicker('edit', source, icon, iconUrl);
+
         document.getElementById('editModal').classList.remove('hidden');
         input.focus();
     }

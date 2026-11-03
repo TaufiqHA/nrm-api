@@ -287,12 +287,18 @@ Accept: application/json
     {
       "songcategoryid": 1,
       "songcategoryname": "Dangdut",
+      "icon": "celebration",
+      "icon_image": null,
+      "icon_url": null,
       "created_at": "2026-08-30T08:23:25.000000Z",
       "updated_at": "2026-08-30T08:23:25.000000Z"
     },
     {
       "songcategoryid": 2,
       "songcategoryname": "Pop Indonesia",
+      "icon": null,
+      "icon_image": "category-icons/pop.png",
+      "icon_url": "https://nyanyianrohanimethodist.xyz/storage/category-icons/pop.png",
       "created_at": "2026-08-30T08:23:25.000000Z",
       "updated_at": "2026-08-30T08:23:25.000000Z"
     }
@@ -320,6 +326,9 @@ Accept: application/json
   "data": {
     "songcategoryid": 1,
     "songcategoryname": "Dangdut",
+    "icon": "celebration",
+    "icon_image": null,
+    "icon_url": null,
     "created_at": "2026-08-30T08:23:25.000000Z",
     "updated_at": "2026-08-30T08:23:25.000000Z"
   }
@@ -353,10 +362,12 @@ Content-Type: application/json
 | Field | Tipe | Wajib | Keterangan |
 | :--- | :--- | :--- | :--- |
 | `songcategoryname` | String | Ya | Nama kategori/genre lagu, maksimal 255 karakter, harus unik. |
+| `icon` | String | Tidak | Key ikon bawaan (lihat daftar di `config/category_icons.php`). Kosongkan untuk ikon otomatis. |
 
 ```json
 {
-  "songcategoryname": "Jazz"
+  "songcategoryname": "Jazz",
+  "icon": "piano"
 }
 ```
 
@@ -367,6 +378,9 @@ Content-Type: application/json
   "data": {
     "songcategoryid": 3,
     "songcategoryname": "Jazz",
+    "icon": "piano",
+    "icon_image": null,
+    "icon_url": null,
     "created_at": "2026-08-30T08:35:00.000000Z",
     "updated_at": "2026-08-30T08:35:00.000000Z"
   }
@@ -412,7 +426,8 @@ Content-Type: application/json
 ##### Request Body
 ```json
 {
-  "songcategoryname": "Smooth Jazz"
+  "songcategoryname": "Smooth Jazz",
+  "icon": "piano"
 }
 ```
 
@@ -423,6 +438,9 @@ Content-Type: application/json
   "data": {
     "songcategoryid": 3,
     "songcategoryname": "Smooth Jazz",
+    "icon": "piano",
+    "icon_image": null,
+    "icon_url": null,
     "created_at": "2026-08-30T08:35:00.000000Z",
     "updated_at": "2026-08-30T08:40:00.000000Z"
   }

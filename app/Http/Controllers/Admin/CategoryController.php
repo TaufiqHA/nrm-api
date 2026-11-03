@@ -7,7 +7,9 @@ use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CategoryController extends Controller
@@ -95,15 +97,13 @@ class CategoryController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'songcategoryname' => ['required', 'string', 'max:255', 'unique:categories,songcategoryname'],
-        ], [
-            'songcategoryname.required' => 'Nama kategori wajib diisi.',
-            'songcategoryname.unique' => 'Nama kategori sudah digunakan.',
-            'songcategoryname.max' => 'Nama kategori maksimal 255 karakter.',
+        $validated = $this->validateCategory($request);
+
+        $category = Category::create([
+            'songcategoryname' => $validated['songcategoryname'],
         ]);
 
-        Category::create($validated);
+        $this->applyIcon($request, $category);
 
         return redirect()->route('admin.categories.index')->with('success', 'Kategori lagu berhasil ditambahkan.');
     }
@@ -113,20 +113,13 @@ class CategoryController extends Controller
      */
     public function update(Request $request, Category $category): RedirectResponse
     {
-        $validated = $request->validate([
-            'songcategoryname' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('categories', 'songcategoryname')->ignore($category->songcategoryid, 'songcategoryid'),
-            ],
-        ], [
-            'songcategoryname.required' => 'Nama kategori wajib diisi.',
-            'songcategoryname.unique' => 'Nama kategori sudah digunakan.',
-            'songcategoryname.max' => 'Nama kategori maksimal 255 karakter.',
+        $validated = $this->validateCategory($request, $category);
+
+        $category->update([
+            'songcategoryname' => $validated['songcategoryname'],
         ]);
 
-        $category->update($validated);
+        $this->applyIcon($request, $category);
 
         return redirect()->route('admin.categories.index')->with('success', 'Kategori lagu berhasil diperbarui.');
     }
@@ -140,8 +133,98 @@ class CategoryController extends Controller
             return back()->with('error', 'Kategori tidak dapat dihapus karena masih digunakan oleh beberapa lagu.');
         }
 
+        $this->deleteIconImage($category);
         $category->delete();
 
         return redirect()->route('admin.categories.index')->with('success', 'Kategori lagu berhasil dihapus.');
+    }
+
+    /**
+     * Validasi data kategori beserta pengaturan ikonnya.
+     *
+     * @return array<string, mixed>
+     */
+    private function validateCategory(Request $request, ?Category $category = null): array
+    {
+        $validated = $request->validate([
+            'songcategoryname' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('categories', 'songcategoryname')->ignore($category?->songcategoryid, 'songcategoryid'),
+            ],
+            'icon_source' => ['nullable', Rule::in(['auto', 'builtin', 'image'])],
+            'icon' => ['nullable', 'string', Rule::in(array_keys(config('category_icons')))],
+            'icon_file' => ['nullable', 'file', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'],
+            'remove_icon' => ['nullable', 'boolean'],
+        ], [
+            'songcategoryname.required' => 'Nama kategori wajib diisi.',
+            'songcategoryname.unique' => 'Nama kategori sudah digunakan.',
+            'songcategoryname.max' => 'Nama kategori maksimal 255 karakter.',
+            'icon.in' => 'Ikon bawaan yang dipilih tidak dikenali.',
+            'icon_file.image' => 'Ikon kustom harus berupa file gambar.',
+            'icon_file.mimes' => 'Ikon kustom harus berformat PNG, JPG, JPEG, atau WEBP.',
+            'icon_file.max' => 'Ukuran ikon kustom maksimal 1 MB.',
+        ]);
+
+        $source = $validated['icon_source'] ?? 'auto';
+
+        if ($source === 'builtin' && empty($validated['icon'])) {
+            throw ValidationException::withMessages([
+                'icon' => 'Pilih salah satu ikon bawaan terlebih dahulu.',
+            ]);
+        }
+
+        if ($source === 'image'
+            && ! $request->hasFile('icon_file')
+            && empty($category?->icon_image)) {
+            throw ValidationException::withMessages([
+                'icon_file' => 'Unggah gambar ikon terlebih dahulu.',
+            ]);
+        }
+
+        $validated['icon_source'] = $source;
+
+        return $validated;
+    }
+
+    /**
+     * Terapkan pengaturan ikon (otomatis, bawaan, atau gambar) ke kategori.
+     */
+    private function applyIcon(Request $request, Category $category): void
+    {
+        $source = $request->input('icon_source', 'auto');
+
+        if ($source === 'builtin') {
+            $this->deleteIconImage($category);
+            $category->icon_image = null;
+            $category->icon = $request->input('icon');
+        } elseif ($source === 'image') {
+            if ($request->hasFile('icon_file')) {
+                $this->deleteIconImage($category);
+                $category->icon_image = $request->file('icon_file')->store('category-icons', 'public');
+            } elseif ($request->boolean('remove_icon')) {
+                $this->deleteIconImage($category);
+                $category->icon_image = null;
+            }
+            $category->icon = null;
+        } else {
+            $this->deleteIconImage($category);
+            $category->icon_image = null;
+            $category->icon = null;
+        }
+
+        $category->save();
+    }
+
+    /**
+     * Hapus file gambar ikon lama dari disk publik.
+     */
+    private function deleteIconImage(Category $category): void
+    {
+        if (! empty($category->icon_image)
+            && Storage::disk('public')->exists($category->icon_image)) {
+            Storage::disk('public')->delete($category->icon_image);
+        }
     }
 }

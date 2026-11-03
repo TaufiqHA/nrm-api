@@ -6,6 +6,7 @@ use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Category extends Model
 {
@@ -23,7 +24,18 @@ class Category extends Model
      */
     protected $fillable = [
         'songcategoryname',
+        'icon',
+        'icon_image',
         'sort_order',
+    ];
+
+    /**
+     * URL absolut gambar ikon (null bila kategori memakai ikon bawaan atau otomatis).
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'icon_url',
     ];
 
     /**
@@ -36,6 +48,18 @@ class Category extends Model
                 $category->sort_order = (static::max('sort_order') ?? 0) + 1;
             }
         });
+    }
+
+    /**
+     * URL publik gambar ikon kategori.
+     */
+    public function getIconUrlAttribute(): ?string
+    {
+        if (empty($this->icon_image)) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($this->icon_image);
     }
 
     /**
