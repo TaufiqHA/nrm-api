@@ -127,6 +127,7 @@
                         <th scope="col" class="px-6 py-4 text-center">Nada</th>
                         <th scope="col" class="px-6 py-4 text-center">Durasi</th>
                         <th scope="col" class="px-6 py-4">URL Lagu</th>
+                        <th scope="col" class="px-6 py-4">Status Unduhan</th>
                         <th scope="col" class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -152,12 +153,74 @@
                                 {{ $song->songduration ?? '—' }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="truncate block max-w-xs font-mono text-xs text-slate-400" title="{{ $song->songurl }}">
+                                <span data-song-url="{{ $song->songid }}" class="truncate block max-w-xs font-mono text-xs text-slate-400" title="{{ $song->songurl }}">
                                     {{ $song->songurl }}
                                 </span>
                             </td>
+                            @php
+                                $downloadStatus = $song->download_status;
+                                $downloadBadge = match ($downloadStatus) {
+                                    'pending' => 'bg-slate-800 text-slate-300 border-slate-700',
+                                    'processing' => 'bg-blue-500/10 text-blue-300 border-blue-500/20',
+                                    'completed' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                                    'failed' => 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+                                    default => 'bg-slate-800 text-slate-400 border-slate-700',
+                                };
+                                $downloadLabel = match ($downloadStatus) {
+                                    'pending' => 'Menunggu',
+                                    'processing' => 'Mengunduh',
+                                    'completed' => 'Selesai',
+                                    'failed' => 'Gagal',
+                                    default => 'Belum diunduh',
+                                };
+                                $downloadProgress = (int) ($song->download_progress ?? 0);
+                                $isActiveDownload = $song->isDownloadInProgress();
+                            @endphp
+                            <td class="px-6 py-4">
+                                <div data-song-status="{{ $song->songid }}" class="space-y-1.5 min-w-36">
+                                    <span data-role="badge" class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium {{ $downloadBadge }}">
+                                        {{ $downloadLabel }}
+                                    </span>
+
+                                    <div data-role="progress-wrap" class="space-y-1 {{ $isActiveDownload ? '' : 'hidden' }}">
+                                        <div class="h-1.5 w-24 overflow-hidden rounded-full bg-slate-800">
+                                            <div data-role="progress-bar" class="h-full rounded-full bg-blue-500 transition-all duration-300" style="width: {{ $downloadProgress }}%"></div>
+                                        </div>
+                                        <span data-role="progress-text" class="block font-mono text-[11px] text-slate-400">{{ $downloadProgress }}%</span>
+                                    </div>
+
+                                    <p data-role="error"
+                                       class="{{ $downloadStatus === 'failed' && $song->download_error ? '' : 'hidden' }} max-w-48 truncate text-xs text-rose-400"
+                                       title="{{ $song->download_error }}">
+                                        {{ $song->download_error }}
+                                    </p>
+
+                                    <a data-role="video-link"
+                                       href="{{ $song->songvideourl }}"
+                                       target="_blank"
+                                       rel="noopener"
+                                       class="{{ $song->songvideourl ? '' : 'hidden' }} inline-flex items-center gap-1 text-xs font-medium text-blue-400 hover:text-blue-300">
+                                        Buka MP4
+                                    </a>
+                                </div>
+                            </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="inline-flex items-center gap-2">
+                                    @if ($song->isYouTubeUrl())
+                                        <form method="POST"
+                                              action="{{ route('admin.songs.download', $song) }}"
+                                              onsubmit="return confirm('Unduh ulang MP3 & MP4 untuk lagu ini? File lama akan diganti.');">
+                                            @csrf
+                                            <button type="submit"
+                                                    class="p-2 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800 transition-colors"
+                                                    title="Unduh Ulang">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    @endif
+
                                     <!-- Edit Button -->
                                     <button type="button" 
                                             onclick='openEditModal(@json($song))'
@@ -182,7 +245,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center justify-center space-y-2">
                                     <svg class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.633 2.163l-1.319.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
@@ -991,6 +1054,104 @@
             submitBtn.innerHTML = originalText;
         }
     });
+
+    // --- Status unduhan YouTube (polling ringan tanpa reload) ---
+    const downloadStatusUrl = "{{ route('admin.songs.download-status') }}";
+    const downloadSongIds = @json($songs->pluck('songid')->values());
+    const downloadBadgeBase = 'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium';
+    const downloadBadgeClasses = {
+        pending: 'bg-slate-800 text-slate-300 border-slate-700',
+        processing: 'bg-blue-500/10 text-blue-300 border-blue-500/20',
+        completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+        failed: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    };
+    const downloadBadgeDefault = 'bg-slate-800 text-slate-400 border-slate-700';
+    const downloadLabels = {
+        pending: 'Menunggu',
+        processing: 'Mengunduh',
+        completed: 'Selesai',
+        failed: 'Gagal',
+    };
+    let downloadPollTimer = null;
+
+    function updateDownloadCell(container, row) {
+        const status = row.download_status || null;
+        const isActive = status === 'pending' || status === 'processing';
+        const progress = Number(row.download_progress || 0);
+
+        const badge = container.querySelector('[data-role="badge"]');
+        if (badge) {
+            badge.className = `${downloadBadgeBase} ${downloadBadgeClasses[status] || downloadBadgeDefault}`;
+            badge.textContent = downloadLabels[status] || 'Belum diunduh';
+        }
+
+        const progressWrap = container.querySelector('[data-role="progress-wrap"]');
+        if (progressWrap) progressWrap.classList.toggle('hidden', !isActive);
+
+        const progressBar = container.querySelector('[data-role="progress-bar"]');
+        if (progressBar) progressBar.style.width = `${progress}%`;
+
+        const progressText = container.querySelector('[data-role="progress-text"]');
+        if (progressText) progressText.textContent = `${progress}%`;
+
+        const errorEl = container.querySelector('[data-role="error"]');
+        if (errorEl) {
+            const hasError = status === 'failed' && row.download_error;
+            errorEl.classList.toggle('hidden', !hasError);
+            errorEl.textContent = hasError ? row.download_error : '';
+            errorEl.title = hasError ? row.download_error : '';
+        }
+
+        const videoLink = container.querySelector('[data-role="video-link"]');
+        if (videoLink) {
+            videoLink.classList.toggle('hidden', !row.songvideourl);
+            videoLink.href = row.songvideourl || '#';
+        }
+
+        const urlEl = document.querySelector(`[data-song-url="${row.songid}"]`);
+        if (urlEl && row.songurl) {
+            urlEl.textContent = row.songurl;
+            urlEl.title = row.songurl;
+        }
+    }
+
+    async function refreshDownloadStatuses() {
+        if (downloadSongIds.length === 0) return;
+
+        const params = new URLSearchParams();
+        downloadSongIds.forEach(id => params.append('ids[]', id));
+
+        try {
+            const response = await fetch(`${downloadStatusUrl}?${params.toString()}`, {
+                headers: { 'Accept': 'application/json' },
+            });
+
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            let hasActive = false;
+
+            payload.data.forEach(row => {
+                if (row.download_status === 'pending' || row.download_status === 'processing') {
+                    hasActive = true;
+                }
+
+                const container = document.querySelector(`[data-song-status="${row.songid}"]`);
+                if (container) updateDownloadCell(container, row);
+            });
+
+            if (!hasActive && downloadPollTimer) {
+                clearInterval(downloadPollTimer);
+                downloadPollTimer = null;
+            }
+        } catch (error) {
+            // Diamkan; polling berikutnya akan mencoba lagi.
+        }
+    }
+
+    @if ($songs->contains(fn ($song) => $song->isDownloadInProgress()))
+        downloadPollTimer = setInterval(refreshDownloadStatuses, 3000);
+    @endif
 
     window.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {

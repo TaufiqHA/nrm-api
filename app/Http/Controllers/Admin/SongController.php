@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\DownloadSongMedia;
 use App\Models\Category;
 use App\Models\Nada;
 use App\Models\Song;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -66,7 +68,9 @@ class SongController extends Controller
             'songnada.in' => 'Pilihan nada tidak valid.',
         ]);
 
-        Song::create($validated);
+        $song = Song::create($validated);
+
+        $this->queueMediaDownload($song);
 
         return redirect()->route('admin.songs.index')->with('success', 'Lagu berhasil ditambahkan ke katalog.');
     }
@@ -96,7 +100,81 @@ class SongController extends Controller
 
         $song->update($validated);
 
+        if ($song->wasChanged('songurl')) {
+            $this->queueMediaDownload($song, force: true);
+        }
+
         return redirect()->route('admin.songs.index')->with('success', 'Data lagu berhasil diperbarui.');
+    }
+
+    /**
+     * Queue a fresh download for the given song.
+     */
+    public function download(Song $song): RedirectResponse
+    {
+        if (! $song->isYouTubeUrl()) {
+            return redirect()->route('admin.songs.index')
+                ->with('error', 'URL lagu bukan link YouTube, unduhan tidak dapat dijalankan.');
+        }
+
+        $this->queueMediaDownload($song, force: true);
+
+        return redirect()->route('admin.songs.index')
+            ->with('success', "Unduhan untuk \"{$song->songtitle}\" berhasil dimasukkan ke antrean.");
+    }
+
+    /**
+     * Return download progress for the requested songs.
+     */
+    public function downloadStatus(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['nullable', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $query = Song::query()->select([
+            'songid',
+            'songtitle',
+            'songurl',
+            'songvideourl',
+            'download_status',
+            'download_progress',
+            'download_error',
+            'downloaded_at',
+        ]);
+
+        if (! empty($validated['ids'])) {
+            $query->whereIn('songid', $validated['ids']);
+        } else {
+            $query->whereNotNull('download_status');
+        }
+
+        return response()->json([
+            'data' => $query->get(),
+        ]);
+    }
+
+    /**
+     * Reset download state and dispatch the media download job.
+     */
+    protected function queueMediaDownload(Song $song, bool $force = false): void
+    {
+        if (! $song->isYouTubeUrl()) {
+            return;
+        }
+
+        if (! $force && $song->isDownloadInProgress()) {
+            return;
+        }
+
+        $song->forceFill([
+            'download_status' => 'pending',
+            'download_progress' => 0,
+            'download_error' => null,
+        ])->save();
+
+        DownloadSongMedia::dispatch($song->songid, $song->songurl);
     }
 
     /**

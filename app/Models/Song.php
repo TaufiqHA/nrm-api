@@ -25,11 +25,68 @@ class Song extends Model
         'songtitle',
         'songsinger',
         'songurl',
+        'songvideourl',
         'songlyric',
         'songcategory',
         'songnada',
         'songduration',
+        'download_status',
+        'download_progress',
+        'download_error',
+        'downloaded_at',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'downloaded_at' => 'datetime',
+            'download_progress' => 'integer',
+        ];
+    }
+
+    /**
+     * Determine whether the given URL points to YouTube.
+     */
+    public static function isYouTubeLink(?string $url): bool
+    {
+        if (! is_string($url) || trim($url) === '') {
+            return false;
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (! is_string($host) || $host === '') {
+            return false;
+        }
+
+        $host = strtolower($host);
+
+        return $host === 'youtu.be'
+            || $host === 'www.youtu.be'
+            || $host === 'youtube.com'
+            || str_ends_with($host, '.youtube.com');
+    }
+
+    /**
+     * Determine whether this song's URL can be downloaded from YouTube.
+     */
+    public function isYouTubeUrl(): bool
+    {
+        return self::isYouTubeLink($this->songurl);
+    }
+
+    /**
+     * Determine whether a download is currently queued or running.
+     */
+    public function isDownloadInProgress(): bool
+    {
+        return in_array($this->download_status, ['pending', 'processing'], true);
+    }
 
     /**
      * Get the category that owns the song.
