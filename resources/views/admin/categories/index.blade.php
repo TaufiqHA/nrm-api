@@ -99,6 +99,7 @@
                         <th scope="col" class="px-6 py-4 w-20 text-center">Ikon</th>
                         <th scope="col" class="px-6 py-4">Nama Kategori</th>
                         <th scope="col" class="px-6 py-4 text-center">Jumlah Lagu</th>
+                        <th scope="col" class="px-6 py-4 text-center">Status</th>
                         <th scope="col" class="px-6 py-4">Dibuat Pada</th>
                         <th scope="col" class="px-6 py-4 text-right">Aksi</th>
                     </tr>
@@ -130,6 +131,24 @@
                                 <span class="inline-flex items-center rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-mono font-medium text-slate-300">
                                     {{ $category->songs_count }} lagu
                                 </span>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <form method="POST" action="{{ route('admin.categories.update-status', $category) }}" class="inline-flex">
+                                    @csrf
+                                    <input type="hidden" name="is_active" value="0">
+                                    <label class="inline-flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox"
+                                               name="is_active"
+                                               value="1"
+                                               onchange="this.form.submit()"
+                                               @checked($category->is_active)
+                                               class="peer sr-only">
+                                        <span class="relative h-5 w-9 rounded-full bg-slate-700 transition-colors peer-checked:bg-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-slate-900 after:absolute after:top-0.5 after:left-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4"></span>
+                                        <span class="text-xs font-medium {{ $category->is_active ? 'text-emerald-400' : 'text-slate-500' }}">
+                                            {{ $category->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
+                                    </label>
+                                </form>
                             </td>
                             <td class="px-6 py-4 text-slate-400 text-xs font-mono">
                                 {{ $category->created_at ? $category->created_at->format('d M Y, H:i') : '—' }}
@@ -188,7 +207,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            <td colspan="8" class="px-6 py-12 text-center text-slate-400">
                                 <div class="flex flex-col items-center justify-center space-y-2">
                                     <svg class="h-8 w-8 text-slate-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />

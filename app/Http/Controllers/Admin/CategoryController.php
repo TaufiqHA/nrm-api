@@ -93,6 +93,23 @@ class CategoryController extends Controller
     }
 
     /**
+     * Update the active status of the category.
+     */
+    public function updateStatus(Request $request, Category $category): RedirectResponse
+    {
+        $validated = $request->validate([
+            'is_active' => ['required', 'boolean'],
+        ]);
+
+        $category->is_active = (bool) $validated['is_active'];
+        $category->save();
+
+        return back()->with('success', $category->is_active
+            ? 'Kategori lagu berhasil diaktifkan.'
+            : 'Kategori lagu berhasil dinonaktifkan.');
+    }
+
+    /**
      * Store a newly created category in storage.
      */
     public function store(Request $request): RedirectResponse

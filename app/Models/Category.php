@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\CategoryFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,6 +28,16 @@ class Category extends Model
         'icon',
         'icon_image',
         'sort_order',
+        'is_active',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -70,5 +81,16 @@ class Category extends Model
     public function songs(): HasMany
     {
         return $this->hasMany(Song::class, 'songcategory', 'songcategoryid');
+    }
+
+    /**
+     * Scope a query to only include active categories.
+     *
+     * @param  Builder<Category>  $query
+     * @return Builder<Category>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 }

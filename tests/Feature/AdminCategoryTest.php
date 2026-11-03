@@ -334,3 +334,47 @@ test('admin can remove an uploaded icon without changing the source', function (
 
     Storage::disk('public')->assertMissing('category-icons/hapus-saja.png');
 });
+
+test('admin can change a category status with the toggle switch', function () {
+    $admin = User::factory()->admin()->create();
+
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Kategori Status',
+    ]);
+
+    $this->actingAs($admin)
+        ->post("/admin/categories/{$category->songcategoryid}/status", ['is_active' => '0'])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($category->fresh()->is_active)->toBeFalse();
+
+    $this->actingAs($admin)
+        ->post("/admin/categories/{$category->songcategoryid}/status", ['is_active' => '1'])
+        ->assertRedirect()
+        ->assertSessionHas('success');
+
+    expect($category->fresh()->is_active)->toBeTrue();
+});
+
+test('category status update requires a boolean value', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+
+    $this->actingAs($admin)
+        ->from('/admin/categories')
+        ->post("/admin/categories/{$category->songcategoryid}/status", ['is_active' => 'invalid'])
+        ->assertRedirect('/admin/categories')
+        ->assertSessionHasErrors(['is_active']);
+
+    expect($category->fresh()->is_active)->toBeTrue();
+});
+
+test('guest cannot change a category status', function () {
+    $category = Category::factory()->create();
+
+    $this->post("/admin/categories/{$category->songcategoryid}/status", ['is_active' => '0'])
+        ->assertRedirect('/login');
+
+    expect($category->fresh()->is_active)->toBeTrue();
+});

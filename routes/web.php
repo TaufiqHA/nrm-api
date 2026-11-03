@@ -58,6 +58,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [CategoryController::class, 'index'])->name('index');
         Route::post('/', [CategoryController::class, 'store'])->name('store');
         Route::post('/{category}/move', [CategoryController::class, 'move'])->name('move');
+        Route::post('/{category}/status', [CategoryController::class, 'updateStatus'])->name('update-status');
         Route::match(['put', 'patch'], '/{category}', [CategoryController::class, 'update'])->name('update');
         Route::delete('/{category}', [CategoryController::class, 'destroy'])->name('destroy');
     });
