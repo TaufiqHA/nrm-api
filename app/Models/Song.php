@@ -25,6 +25,7 @@ class Song extends Model
         'songtitle',
         'songsinger',
         'songurl',
+        'songyoutubeurl',
         'songvideourl',
         'songlyric',
         'songcategory',
@@ -70,14 +71,6 @@ class Song extends Model
             || $host === 'www.youtu.be'
             || $host === 'youtube.com'
             || str_ends_with($host, '.youtube.com');
-    }
-
-    /**
-     * Determine whether this song's URL can be downloaded from YouTube.
-     */
-    public function isYouTubeUrl(): bool
-    {
-        return self::isYouTubeLink($this->songurl);
     }
 
     /**

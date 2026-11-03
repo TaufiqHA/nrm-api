@@ -7,7 +7,6 @@ use App\Jobs\DownloadSongMedia;
 use App\Models\Category;
 use App\Models\Nada;
 use App\Models\Song;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -68,6 +67,10 @@ class SongController extends Controller
             'songnada.in' => 'Pilihan nada tidak valid.',
         ]);
 
+        $validated['songyoutubeurl'] = Song::isYouTubeLink($validated['songurl'])
+            ? $validated['songurl']
+            : null;
+
         $song = Song::create($validated);
 
         $this->queueMediaDownload($song);
@@ -98,9 +101,24 @@ class SongController extends Controller
             'songnada.in' => 'Pilihan nada tidak valid.',
         ]);
 
+        $submittedUrl = $validated['songurl'];
+        $isYoutube = Song::isYouTubeLink($submittedUrl);
+        $previousYoutubeUrl = $song->songyoutubeurl;
+
+        if ($isYoutube) {
+            $validated['songyoutubeurl'] = $submittedUrl;
+
+            if ($previousYoutubeUrl === $submittedUrl) {
+                // Link YouTube tidak berubah: pertahankan URL file lokal di songurl.
+                unset($validated['songurl']);
+            }
+        } else {
+            $validated['songyoutubeurl'] = null;
+        }
+
         $song->update($validated);
 
-        if ($song->wasChanged('songurl')) {
+        if ($isYoutube && $previousYoutubeUrl !== $submittedUrl) {
             $this->queueMediaDownload($song, force: true);
         }
 
@@ -108,51 +126,27 @@ class SongController extends Controller
     }
 
     /**
-     * Queue a fresh download for the given song.
+     * Queue downloads for every song that still needs local media.
      */
-    public function download(Song $song): RedirectResponse
+    public function downloadAll(): RedirectResponse
     {
-        if (! $song->isYouTubeUrl()) {
+        $songs = Song::query()
+            ->whereNotNull('songyoutubeurl')
+            ->where(function ($query) {
+                $query->whereNull('download_status')
+                    ->orWhere('download_status', 'failed');
+            })
+            ->get();
+
+        if ($songs->isEmpty()) {
             return redirect()->route('admin.songs.index')
-                ->with('error', 'URL lagu bukan link YouTube, unduhan tidak dapat dijalankan.');
+                ->with('success', 'Tidak ada lagu yang perlu diunduh.');
         }
 
-        $this->queueMediaDownload($song, force: true);
+        $songs->each(fn (Song $song) => $this->queueMediaDownload($song, force: true));
 
         return redirect()->route('admin.songs.index')
-            ->with('success', "Unduhan untuk \"{$song->songtitle}\" berhasil dimasukkan ke antrean.");
-    }
-
-    /**
-     * Return download progress for the requested songs.
-     */
-    public function downloadStatus(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'ids' => ['nullable', 'array'],
-            'ids.*' => ['integer'],
-        ]);
-
-        $query = Song::query()->select([
-            'songid',
-            'songtitle',
-            'songurl',
-            'songvideourl',
-            'download_status',
-            'download_progress',
-            'download_error',
-            'downloaded_at',
-        ]);
-
-        if (! empty($validated['ids'])) {
-            $query->whereIn('songid', $validated['ids']);
-        } else {
-            $query->whereNotNull('download_status');
-        }
-
-        return response()->json([
-            'data' => $query->get(),
-        ]);
+            ->with('success', "{$songs->count()} lagu berhasil dimasukkan ke antrean unduhan.");
     }
 
     /**
@@ -160,7 +154,9 @@ class SongController extends Controller
      */
     protected function queueMediaDownload(Song $song, bool $force = false): void
     {
-        if (! $song->isYouTubeUrl()) {
+        $sourceUrl = $song->songyoutubeurl;
+
+        if (! Song::isYouTubeLink($sourceUrl)) {
             return;
         }
 
@@ -174,7 +170,7 @@ class SongController extends Controller
             'download_error' => null,
         ])->save();
 
-        DownloadSongMedia::dispatch($song->songid, $song->songurl);
+        DownloadSongMedia::dispatch($song->songid, $sourceUrl);
     }
 
     /**

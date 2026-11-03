@@ -65,9 +65,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     Route::prefix('songs')->name('songs.')->group(function () {
         Route::get('/', [SongController::class, 'index'])->name('index');
-        Route::get('/download-status', [SongController::class, 'downloadStatus'])->name('download-status');
+        Route::post('/download-all', [SongController::class, 'downloadAll'])->name('download-all');
         Route::post('/', [SongController::class, 'store'])->name('store');
-        Route::post('/{song}/download', [SongController::class, 'download'])->name('download');
         Route::match(['put', 'patch'], '/{song}', [SongController::class, 'update'])->name('update');
         Route::delete('/{song}', [SongController::class, 'destroy'])->name('destroy');
     });

@@ -51,7 +51,7 @@ class DownloadSongMedia implements ShouldBeUnique, ShouldQueue
         }
 
         // Link berubah setelah job masuk queue — batalkan agar tidak menimpa data terbaru.
-        if ($song->songurl !== $this->url || ! $song->isYouTubeUrl()) {
+        if ($song->songyoutubeurl !== $this->url) {
             return;
         }
 

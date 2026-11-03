@@ -17,6 +17,7 @@ function youtubeSong(): Song
         'songcategory' => Category::factory(),
         'songtitle' => 'Lagu Uji Unduh',
         'songurl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        'songyoutubeurl' => 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
         'download_status' => 'pending',
         'download_progress' => 0,
     ]);
@@ -53,7 +54,8 @@ test('download job stores both media files and updates the song urls', function 
         ->and($song->download_error)->toBeNull()
         ->and($song->downloaded_at)->not->toBeNull()
         ->and($song->songurl)->toContain("songs/{$song->songid}/audio.mp3")
-        ->and($song->songvideourl)->toContain("songs/{$song->songid}/video.mp4");
+        ->and($song->songvideourl)->toContain("songs/{$song->songid}/video.mp4")
+        ->and($song->songyoutubeurl)->toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 
     Storage::disk('public')->assertExists("songs/{$song->songid}/audio.mp3");
     Storage::disk('public')->assertExists("songs/{$song->songid}/video.mp4");
@@ -96,12 +98,12 @@ test('download job keeps the old urls and marks failure when a download fails', 
     Storage::disk('public')->assertMissing("songs/{$song->songid}/audio.mp3");
 });
 
-test('download job aborts when the song url changed after being queued', function () {
+test('download job aborts when the youtube url changed after being queued', function () {
     Storage::fake('public');
 
     $song = youtubeSong();
-    $queuedUrl = $song->songurl;
-    $song->forceFill(['songurl' => 'https://youtu.be/zzzzzzzzzzz'])->save();
+    $queuedUrl = $song->songyoutubeurl;
+    $song->forceFill(['songyoutubeurl' => 'https://youtu.be/zzzzzzzzzzz'])->save();
 
     $this->mock(YouTubeDownloader::class, function (MockInterface $mock) {
         $mock->shouldReceive('downloadAudio')->never();
