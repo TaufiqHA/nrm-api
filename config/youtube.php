@@ -56,4 +56,23 @@ return [
 
     'max_height' => (int) env('YOUTUBE_MAX_HEIGHT', 720),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Kompatibilitas Android
+    |--------------------------------------------------------------------------
+    |
+    | Bila aktif, video MP4 dipaksa memakai H.264 + AAC agar dapat diputar di
+    | sebagian besar perangkat Android. Video lama yang tidak kompatibel dapat
+    | diperbaiki dengan perintah `php artisan songs:fix-videos`.
+    |
+    */
+
+    'android_compatible' => (bool) env('YOUTUBE_ANDROID_COMPATIBLE', true),
+
+    'video_preset' => env('YOUTUBE_VIDEO_PRESET', 'veryfast'),
+
+    'video_crf' => (int) env('YOUTUBE_VIDEO_CRF', 23),
+
+    'aac_bitrate' => env('YOUTUBE_AAC_BITRATE', '160k'),
+
 ];
