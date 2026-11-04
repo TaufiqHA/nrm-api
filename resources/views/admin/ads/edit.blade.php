@@ -9,7 +9,7 @@
     <div class="pb-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Konfigurasi Iklan</h1>
-            <p class="text-sm text-slate-300 mt-1">Kelola banner gambar dan Ad Unit AdMob untuk slot atas, konten, halaman utama, halaman lirik, serta banner bawah aplikasi.</p>
+            <p class="text-sm text-slate-300 mt-1">Kelola banner gambar dan Ad Unit AdMob untuk slot halaman musik (atas, konten, dan bawah), halaman utama, serta slot khusus halaman lirik.</p>
         </div>
     </div>
 
@@ -43,16 +43,29 @@
         @csrf
         @method('PUT')
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">
+        <div class="space-y-6 w-full">
 
-            <!-- Card 1: Iklan Utama (Slot 1, Slot 2, Halaman Utama & Lirik) -->
-            <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
-                <div class="border-b border-slate-800 pb-4">
-                    <h2 class="text-base font-semibold text-white">Iklan Utama</h2>
-                    <p class="text-xs text-slate-400 mt-1">Banner/gambar atau AdMob untuk slot atas (header), slot konten (pop-up), halaman utama, dan halaman lirik only.</p>
+            <!-- Halaman Musik -->
+            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
+                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-blue-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.633 2.163l-1.319.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-white">Iklan Utama — Halaman Musik</h2>
+                            <p class="text-xs text-slate-400 mt-1">Slot header, pop-up, dan footer yang tampil pada halaman musik.</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-slate-800 bg-slate-950 px-3 py-1 text-[11px] font-medium text-slate-400">
+                        <span class="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+                        3 slot
+                    </span>
                 </div>
 
-                <div class="space-y-5">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
                     <!-- Banner Slot 1 -->
                     @include('admin.ads._ad_slot', [
                         'setting' => $setting,
@@ -67,37 +80,112 @@
                         'label' => 'Slot 2 — Konten / Pop-up',
                     ])
 
-                    <!-- Banner Halaman Utama -->
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadshome',
-                        'label' => 'Slot 3 — Halaman Utama',
-                    ])
-
-                    <!-- Banner Halaman Lirik Only -->
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadslyric',
-                        'label' => 'Slot 4 — Halaman Lirik Only',
-                    ])
-                </div>
-            </div>
-
-            <!-- Card 2: Iklan Bawah (Footer) -->
-            <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
-                <div class="border-b border-slate-800 pb-4">
-                    <h2 class="text-base font-semibold text-white">Iklan Bawah</h2>
-                    <p class="text-xs text-slate-400 mt-1">Banner/gambar atau AdMob untuk bilah bawah (footer) aplikasi.</p>
-                </div>
-
-                <div class="space-y-4">
+                    <!-- Iklan Bawah -->
                     @include('admin.ads._ad_slot', [
                         'setting' => $setting,
                         'name' => 'applicationadsbottom',
                         'label' => 'Iklan Bawah — Footer',
                     ])
                 </div>
-            </div>
+            </section>
+
+            <!-- Halaman Lirik -->
+            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
+                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-emerald-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman Lirik</h2>
+                            <p class="text-xs text-slate-400 mt-1">Slot khusus mode Hanya Lirik, terpisah dari pengaturan halaman musik.</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-400">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                        3 slot terpisah
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadslyrictop',
+                        'label' => 'Halaman Lirik — Atas',
+                    ])
+
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadslyric',
+                        'label' => 'Slot 4 — Pop-up Halaman Lirik Only',
+                    ])
+
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadslyricbottom',
+                        'label' => 'Halaman Lirik — Bawah',
+                    ])
+                </div>
+            </section>
+
+            <!-- Halaman Utama -->
+            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
+                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-amber-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman Utama</h2>
+                            <p class="text-xs text-slate-400 mt-1">Pop-up iklan yang tampil saat aplikasi pertama kali dibuka.</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-slate-800 bg-slate-950 px-3 py-1 text-[11px] font-medium text-slate-400">
+                        <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
+                        1 slot
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshome',
+                        'label' => 'Slot 3 — Halaman Utama',
+                    ])
+
+                    <div class="flex h-full flex-col justify-center rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6">
+                        <div class="flex items-center gap-2 text-slate-200">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                            </svg>
+                            <h3 class="text-sm font-semibold">Ringkasan Slot</h3>
+                        </div>
+
+                        <ul class="mt-4 space-y-3 text-sm text-slate-400">
+                            <li class="flex gap-2.5">
+                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400"></span>
+                                <span><strong class="font-semibold text-slate-200">Halaman Musik:</strong> banner header, pop-up konten, dan footer.</span>
+                            </li>
+                            <li class="flex gap-2.5">
+                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400"></span>
+                                <span><strong class="font-semibold text-slate-200">Halaman Lirik:</strong> banner atas, pop-up, dan banner bawah dengan pengaturan sendiri.</span>
+                            </li>
+                            <li class="flex gap-2.5">
+                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"></span>
+                                <span><strong class="font-semibold text-slate-200">Halaman Utama:</strong> pop-up pembuka aplikasi.</span>
+                            </li>
+                        </ul>
+
+                        <p class="mt-5 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-2.5 text-xs leading-relaxed text-blue-300">
+                            Slot halaman musik dan halaman lirik dikelola terpisah, sehingga banner lirik tidak menimpa banner musik.
+                        </p>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- Actions Bar -->

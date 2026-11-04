@@ -44,6 +44,16 @@ class AdSettingController extends Controller
             'applicationadslyricunit' => '',
             'applicationadslyricactive' => 'Y',
             'applicationadslyricclickurl' => '',
+            'applicationadslyrictop' => '',
+            'applicationadslyrictoptype' => 'image',
+            'applicationadslyrictopunit' => '',
+            'applicationadslyrictopactive' => 'Y',
+            'applicationadslyrictopclickurl' => '',
+            'applicationadslyricbottom' => '',
+            'applicationadslyricbottomtype' => 'image',
+            'applicationadslyricbottomunit' => '',
+            'applicationadslyricbottomactive' => 'Y',
+            'applicationadslyricbottomclickurl' => '',
             'applicationadsactive' => 'Y',
             'applicationadsbottom' => '',
             'applicationadsbottomtype' => 'image',
@@ -88,6 +98,16 @@ class AdSettingController extends Controller
             'applicationadslyricunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadslyrictype,'.$admobTypes],
             'applicationadslyricactive' => ['nullable', 'in:Y,N'],
             'applicationadslyricclickurl' => ['nullable', 'url:http,https', 'max:2048'],
+            'applicationadslyrictop' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'applicationadslyrictoptype' => ['nullable', 'string', 'in:image,'.$admobTypes],
+            'applicationadslyrictopunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadslyrictoptype,'.$admobTypes],
+            'applicationadslyrictopactive' => ['nullable', 'in:Y,N'],
+            'applicationadslyrictopclickurl' => ['nullable', 'url:http,https', 'max:2048'],
+            'applicationadslyricbottom' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'applicationadslyricbottomtype' => ['nullable', 'string', 'in:image,'.$admobTypes],
+            'applicationadslyricbottomunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadslyricbottomtype,'.$admobTypes],
+            'applicationadslyricbottomactive' => ['nullable', 'in:Y,N'],
+            'applicationadslyricbottomclickurl' => ['nullable', 'url:http,https', 'max:2048'],
             'applicationadsbottom' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
             'applicationadsbottomtype' => ['nullable', 'string', 'in:image,'.$admobTypes],
             'applicationadsbottomunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadsbottomtype,'.$admobTypes],
@@ -97,6 +117,8 @@ class AdSettingController extends Controller
             'delete_applicationads2' => ['nullable', 'boolean'],
             'delete_applicationadshome' => ['nullable', 'boolean'],
             'delete_applicationadslyric' => ['nullable', 'boolean'],
+            'delete_applicationadslyrictop' => ['nullable', 'boolean'],
+            'delete_applicationadslyricbottom' => ['nullable', 'boolean'],
             'delete_applicationadsbottom' => ['nullable', 'boolean'],
         ], [
             'applicationads1.image' => 'Banner iklan slot 1 harus berupa file gambar.',
@@ -129,6 +151,20 @@ class AdSettingController extends Controller
             'applicationadslyricactive.in' => 'Status iklan halaman lirik harus bernilai Y atau N.',
             'applicationadslyricclickurl.url' => 'URL tujuan banner halaman lirik harus berupa URL yang valid.',
             'applicationadslyricclickurl.max' => 'URL tujuan banner halaman lirik maksimal 2048 karakter.',
+            'applicationadslyrictop.image' => 'Banner iklan atas halaman lirik harus berupa file gambar.',
+            'applicationadslyrictop.max' => 'Ukuran file banner atas halaman lirik maksimal 2MB.',
+            'applicationadslyrictoptype.in' => 'Jenis iklan atas halaman lirik tidak dikenali.',
+            'applicationadslyrictopunit.required_if' => 'Ad Unit ID AdMob atas halaman lirik wajib diisi.',
+            'applicationadslyrictopactive.in' => 'Status iklan atas halaman lirik harus bernilai Y atau N.',
+            'applicationadslyrictopclickurl.url' => 'URL tujuan banner atas halaman lirik harus berupa URL yang valid.',
+            'applicationadslyrictopclickurl.max' => 'URL tujuan banner atas halaman lirik maksimal 2048 karakter.',
+            'applicationadslyricbottom.image' => 'Banner iklan bawah halaman lirik harus berupa file gambar.',
+            'applicationadslyricbottom.max' => 'Ukuran file banner bawah halaman lirik maksimal 2MB.',
+            'applicationadslyricbottomtype.in' => 'Jenis iklan bawah halaman lirik tidak dikenali.',
+            'applicationadslyricbottomunit.required_if' => 'Ad Unit ID AdMob bawah halaman lirik wajib diisi.',
+            'applicationadslyricbottomactive.in' => 'Status iklan bawah halaman lirik harus bernilai Y atau N.',
+            'applicationadslyricbottomclickurl.url' => 'URL tujuan banner bawah halaman lirik harus berupa URL yang valid.',
+            'applicationadslyricbottomclickurl.max' => 'URL tujuan banner bawah halaman lirik maksimal 2048 karakter.',
             'applicationadsbottom.image' => 'Banner iklan bawah harus berupa file gambar.',
             'applicationadsbottom.max' => 'Ukuran file banner iklan bawah maksimal 2MB.',
             'applicationadsbottomtype.in' => 'Jenis iklan bawah tidak dikenali.',
@@ -142,13 +178,13 @@ class AdSettingController extends Controller
         $setting = Setting::first();
 
         // Normalisasi nilai default jenis iklan bila tidak dikirim oleh form.
-        foreach (['applicationads1type', 'applicationads2type', 'applicationadshometype', 'applicationadslyrictype', 'applicationadsbottomtype'] as $typeField) {
+        foreach (['applicationads1type', 'applicationads2type', 'applicationadshometype', 'applicationadslyrictype', 'applicationadslyrictoptype', 'applicationadslyricbottomtype', 'applicationadsbottomtype'] as $typeField) {
             if (empty($validated[$typeField])) {
                 $validated[$typeField] = $setting?->$typeField ?? 'image';
             }
         }
 
-        $adFields = ['applicationads1', 'applicationads2', 'applicationadshome', 'applicationadslyric', 'applicationadsbottom'];
+        $adFields = ['applicationads1', 'applicationads2', 'applicationadshome', 'applicationadslyric', 'applicationadslyrictop', 'applicationadslyricbottom', 'applicationadsbottom'];
         foreach ($adFields as $field) {
             if ($request->hasFile($field)) {
                 if ($setting && $setting->$field && ! filter_var($setting->$field, FILTER_VALIDATE_URL) && Storage::disk('public')->exists($setting->$field)) {

@@ -351,6 +351,14 @@ test('admin can save home and lyric page ads via api', function () {
         'applicationadslyrictype' => 'admob_banner',
         'applicationadslyricunit' => 'ca-app-pub-1234567890123456/4444444444',
         'applicationadslyricactive' => 'N',
+        'applicationadslyrictop' => 'https://example.com/lyric-top.jpg',
+        'applicationadslyrictoptype' => 'image',
+        'applicationadslyrictopactive' => 'Y',
+        'applicationadslyrictopclickurl' => 'https://example.com/lyric-top',
+        'applicationadslyricbottomtype' => 'admob_banner',
+        'applicationadslyricbottomunit' => 'ca-app-pub-1234567890123456/5555555555',
+        'applicationadslyricbottomactive' => 'N',
+        'applicationadslyricbottomclickurl' => 'https://example.com/lyric-bottom',
     ]);
 
     $response->assertStatus(201)
@@ -362,6 +370,11 @@ test('admin can save home and lyric page ads via api', function () {
                 'applicationadslyrictype' => 'admob_banner',
                 'applicationadslyricunit' => 'ca-app-pub-1234567890123456/4444444444',
                 'applicationadslyricactive' => 'N',
+                'applicationadslyrictop' => 'https://example.com/lyric-top.jpg',
+                'applicationadslyrictopactive' => 'Y',
+                'applicationadslyricbottomtype' => 'admob_banner',
+                'applicationadslyricbottomunit' => 'ca-app-pub-1234567890123456/5555555555',
+                'applicationadslyricbottomactive' => 'N',
             ],
         ]);
 
@@ -370,7 +383,28 @@ test('admin can save home and lyric page ads via api', function () {
         'applicationadshomeclickurl' => 'https://example.com/home',
         'applicationadslyrictype' => 'admob_banner',
         'applicationadslyricactive' => 'N',
+        'applicationadslyrictopactive' => 'Y',
+        'applicationadslyricbottomtype' => 'admob_banner',
+        'applicationadslyricbottomactive' => 'N',
     ]);
+});
+
+test('admin settings api rejects invalid lyric page top and bottom ad values', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'PT ABC',
+        'applicationname' => 'Karaoke App',
+        'applicationadslyrictopclickurl' => 'bukan-url',
+        'applicationadslyricbottomactive' => 'INVALID',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors([
+            'applicationadslyrictopclickurl',
+            'applicationadslyricbottomactive',
+        ]);
 });
 
 test('admin settings api rejects invalid home and lyric page ad values', function () {

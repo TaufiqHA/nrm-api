@@ -42,14 +42,21 @@ test('admin can view ads page even if no settings record exists yet', function (
     $response->assertSee('name="applicationads2active"', false);
     $response->assertSee('name="applicationadshomeactive"', false);
     $response->assertSee('name="applicationadslyricactive"', false);
+    $response->assertSee('name="applicationadslyrictopactive"', false);
+    $response->assertSee('name="applicationadslyricbottomactive"', false);
     $response->assertSee('name="applicationadsbottomactive"', false);
     $response->assertSee('name="applicationads1clickurl"', false);
     $response->assertSee('name="applicationads2clickurl"', false);
     $response->assertSee('name="applicationadshomeclickurl"', false);
     $response->assertSee('name="applicationadslyricclickurl"', false);
+    $response->assertSee('name="applicationadslyrictopclickurl"', false);
+    $response->assertSee('name="applicationadslyricbottomclickurl"', false);
     $response->assertSee('name="applicationadsbottomclickurl"', false);
     $response->assertSee('Slot 3 — Halaman Utama');
-    $response->assertSee('Slot 4 — Halaman Lirik Only');
+    $response->assertSee('Slot 4 — Pop-up Halaman Lirik Only');
+    $response->assertSee('Iklan Halaman Lirik');
+    $response->assertSee('Halaman Lirik — Atas');
+    $response->assertSee('Halaman Lirik — Bawah');
     $response->assertDontSee('name="applicationadsactive"', false);
 });
 
@@ -210,6 +217,61 @@ test('admin can save ad configuration for home and lyric pages', function () {
         ->and($setting->applicationadslyricactive)->toBe('N');
 
     Storage::disk('public')->assertExists($setting->applicationadshome);
+});
+
+test('admin can save separate lyric page top and bottom slots', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $topBanner = UploadedFile::fake()->image('lyric-top.jpg', 600, 200);
+    $bottomBanner = UploadedFile::fake()->image('lyric-bottom.jpg', 600, 200);
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'applicationadslyrictop' => $topBanner,
+        'applicationadslyrictopactive' => 'Y',
+        'applicationadslyrictopclickurl' => 'https://example.com/lyric-top',
+        'applicationadslyricbottomtype' => 'admob_banner',
+        'applicationadslyricbottomunit' => 'ca-app-pub-1234567890123456/5555555555',
+        'applicationadslyricbottomactive' => 'N',
+        'applicationadslyricbottomclickurl' => 'https://example.com/lyric-bottom',
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadslyrictop)->not->toBeNull()
+        ->and($setting->applicationadslyrictopactive)->toBe('Y')
+        ->and($setting->applicationadslyrictopclickurl)->toBe('https://example.com/lyric-top')
+        ->and($setting->applicationadslyricbottomtype)->toBe('admob_banner')
+        ->and($setting->applicationadslyricbottomunit)->toBe('ca-app-pub-1234567890123456/5555555555')
+        ->and($setting->applicationadslyricbottomactive)->toBe('N')
+        ->and($setting->applicationadslyricbottomclickurl)->toBe('https://example.com/lyric-bottom');
+
+    Storage::disk('public')->assertExists($setting->applicationadslyrictop);
+});
+
+test('admin save requires ad unit id for lyric page top and bottom admob slots', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'applicationadslyrictoptype' => 'admob_native',
+        'applicationadslyrictopunit' => '',
+        'applicationadslyricbottomtype' => 'admob_banner',
+        'applicationadslyricbottomunit' => '',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'applicationadslyrictopunit',
+        'applicationadslyricbottomunit',
+    ]);
 });
 
 test('admin save requires ad unit id for home and lyric admob slots', function () {
