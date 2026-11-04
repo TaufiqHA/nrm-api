@@ -336,6 +336,61 @@ test('admin can create settings with admob ad configuration via api', function (
     ]);
 });
 
+test('admin can save home and lyric page ads via api', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'Media Prima Nusantara',
+        'applicationname' => 'Karaoke Pages',
+        'applicationadshome' => 'https://example.com/home.jpg',
+        'applicationadshometype' => 'image',
+        'applicationadshomeactive' => 'Y',
+        'applicationadshomeclickurl' => 'https://example.com/home',
+        'applicationadslyric' => '',
+        'applicationadslyrictype' => 'admob_banner',
+        'applicationadslyricunit' => 'ca-app-pub-1234567890123456/4444444444',
+        'applicationadslyricactive' => 'N',
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJson([
+            'data' => [
+                'applicationadshome' => 'https://example.com/home.jpg',
+                'applicationadshomeactive' => 'Y',
+                'applicationadshomeclickurl' => 'https://example.com/home',
+                'applicationadslyrictype' => 'admob_banner',
+                'applicationadslyricunit' => 'ca-app-pub-1234567890123456/4444444444',
+                'applicationadslyricactive' => 'N',
+            ],
+        ]);
+
+    $this->assertDatabaseHas('tb_application', [
+        'applicationadshomeactive' => 'Y',
+        'applicationadshomeclickurl' => 'https://example.com/home',
+        'applicationadslyrictype' => 'admob_banner',
+        'applicationadslyricactive' => 'N',
+    ]);
+});
+
+test('admin settings api rejects invalid home and lyric page ad values', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'PT ABC',
+        'applicationname' => 'Karaoke App',
+        'applicationadshomeclickurl' => 'bukan-url',
+        'applicationadslyricactive' => 'INVALID',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors([
+            'applicationadshomeclickurl',
+            'applicationadslyricactive',
+        ]);
+});
+
 test('admin settings api rejects invalid banner click url', function () {
     $admin = User::factory()->admin()->create();
     Sanctum::actingAs($admin);

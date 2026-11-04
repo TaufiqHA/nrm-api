@@ -9,7 +9,7 @@
     <div class="pb-4 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
             <h1 class="text-2xl font-bold text-white tracking-tight">Konfigurasi Iklan</h1>
-            <p class="text-sm text-slate-300 mt-1">Kelola banner gambar dan Ad Unit AdMob untuk slot atas, konten, serta banner bawah aplikasi.</p>
+            <p class="text-sm text-slate-300 mt-1">Kelola banner gambar dan Ad Unit AdMob untuk slot atas, konten, halaman utama, halaman lirik, serta banner bawah aplikasi.</p>
         </div>
     </div>
 
@@ -45,11 +45,11 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">
 
-            <!-- Card 1: Iklan Utama (Slot 1 & Slot 2) -->
+            <!-- Card 1: Iklan Utama (Slot 1, Slot 2, Halaman Utama & Lirik) -->
             <div class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
                 <div class="border-b border-slate-800 pb-4">
                     <h2 class="text-base font-semibold text-white">Iklan Utama</h2>
-                    <p class="text-xs text-slate-400 mt-1">Banner/gambar atau AdMob untuk slot atas (header) dan slot konten (pop-up).</p>
+                    <p class="text-xs text-slate-400 mt-1">Banner/gambar atau AdMob untuk slot atas (header), slot konten (pop-up), halaman utama, dan halaman lirik only.</p>
                 </div>
 
                 <div class="space-y-5">
@@ -65,6 +65,20 @@
                         'setting' => $setting,
                         'name' => 'applicationads2',
                         'label' => 'Slot 2 — Konten / Pop-up',
+                    ])
+
+                    <!-- Banner Halaman Utama -->
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshome',
+                        'label' => 'Slot 3 — Halaman Utama',
+                    ])
+
+                    <!-- Banner Halaman Lirik Only -->
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadslyric',
+                        'label' => 'Slot 4 — Halaman Lirik Only',
                     ])
                 </div>
             </div>

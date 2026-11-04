@@ -40,10 +40,16 @@ test('admin can view ads page even if no settings record exists yet', function (
     $response->assertSee('Ad Unit ID AdMob');
     $response->assertSee('name="applicationads1active"', false);
     $response->assertSee('name="applicationads2active"', false);
+    $response->assertSee('name="applicationadshomeactive"', false);
+    $response->assertSee('name="applicationadslyricactive"', false);
     $response->assertSee('name="applicationadsbottomactive"', false);
     $response->assertSee('name="applicationads1clickurl"', false);
     $response->assertSee('name="applicationads2clickurl"', false);
+    $response->assertSee('name="applicationadshomeclickurl"', false);
+    $response->assertSee('name="applicationadslyricclickurl"', false);
     $response->assertSee('name="applicationadsbottomclickurl"', false);
+    $response->assertSee('Slot 3 — Halaman Utama');
+    $response->assertSee('Slot 4 — Halaman Lirik Only');
     $response->assertDontSee('name="applicationadsactive"', false);
 });
 
@@ -172,6 +178,58 @@ test('admin can save click url for each image banner', function () {
     expect($setting->applicationads1clickurl)->toBe('https://example.com/slot-1')
         ->and($setting->applicationads2clickurl)->toBe('https://example.com/slot-2')
         ->and($setting->applicationadsbottomclickurl)->toBe('https://example.com/footer');
+});
+
+test('admin can save ad configuration for home and lyric pages', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $homeBanner = UploadedFile::fake()->image('home-banner.jpg', 600, 200);
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'applicationadshome' => $homeBanner,
+        'applicationadshomeactive' => 'Y',
+        'applicationadshomeclickurl' => 'https://example.com/home',
+        'applicationadslyrictype' => 'admob_banner',
+        'applicationadslyricunit' => 'ca-app-pub-1234567890123456/4444444444',
+        'applicationadslyricactive' => 'N',
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadshome)->not->toBeNull()
+        ->and($setting->applicationadshomeactive)->toBe('Y')
+        ->and($setting->applicationadshomeclickurl)->toBe('https://example.com/home')
+        ->and($setting->applicationadslyrictype)->toBe('admob_banner')
+        ->and($setting->applicationadslyricunit)->toBe('ca-app-pub-1234567890123456/4444444444')
+        ->and($setting->applicationadslyricactive)->toBe('N');
+
+    Storage::disk('public')->assertExists($setting->applicationadshome);
+});
+
+test('admin save requires ad unit id for home and lyric admob slots', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'applicationadshometype' => 'admob_native',
+        'applicationadshomeunit' => '',
+        'applicationadslyrictype' => 'admob_interstitial',
+        'applicationadslyricunit' => '',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'applicationadshomeunit',
+        'applicationadslyricunit',
+    ]);
 });
 
 test('admin save rejects invalid banner click url', function () {
