@@ -8,31 +8,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\View\View;
 
 class NadaController extends Controller
 {
-    /**
-     * Display a listing of nadas.
-     */
-    public function index(Request $request): View|JsonResponse
-    {
-        $query = Nada::withCount('songs');
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where('nada', 'like', "%{$search}%");
-        }
-
-        $nadas = $query->orderBy('nada')->paginate(10)->withQueryString();
-
-        if ($request->wantsJson() || ! view()->exists('admin.nadas.index')) {
-            return response()->json($nadas);
-        }
-
-        return view('admin.nadas.index', compact('nadas'));
-    }
-
     /**
      * Store a newly created nada in storage.
      */
@@ -55,19 +33,7 @@ class NadaController extends Controller
             ], 201);
         }
 
-        return redirect()->back(fallback: route('admin.nadas.index'))->with('success', 'Nada berhasil ditambahkan.');
-    }
-
-    /**
-     * Display the specified nada.
-     */
-    public function show(Request $request, Nada $nada): View|JsonResponse
-    {
-        if ($request->wantsJson() || ! view()->exists('admin.nadas.show')) {
-            return response()->json(['data' => $nada]);
-        }
-
-        return view('admin.nadas.show', compact('nada'));
+        return back()->with('success', 'Nada berhasil ditambahkan.');
     }
 
     /**
@@ -97,7 +63,7 @@ class NadaController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.nadas.index')->with('success', 'Nada berhasil diperbarui.');
+        return back()->with('success', 'Nada berhasil diperbarui.');
     }
 
     /**
@@ -123,6 +89,6 @@ class NadaController extends Controller
             ]);
         }
 
-        return redirect()->route('admin.nadas.index')->with('success', 'Nada berhasil dihapus.');
+        return back()->with('success', 'Nada berhasil dihapus.');
     }
 }

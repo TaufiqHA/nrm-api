@@ -72,17 +72,6 @@
                 <span class="text-xs font-mono {{ request()->routeIs('admin.categories.*') ? 'text-blue-200' : 'text-slate-400' }}">{{ $stats['total_categories'] ?? '' }}</span>
             </a>
 
-            <a href="{{ route('admin.nadas.index') }}" 
-               class="flex items-center justify-between rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors {{ request()->routeIs('admin.nadas.*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
-                <div class="flex items-center gap-3">
-                    <svg class="h-5 w-5 {{ request()->routeIs('admin.nadas.*') ? 'text-white' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="m9 9 10.5-3m0 6.553v3.75a2.25 2.25 0 0 1-1.632 2.163l-1.32.377a1.803 1.803 0 1 1-.99-3.467l2.31-.66a2.25 2.25 0 0 0 1.632-2.163Zm0 0V2.25L9 5.25v10.303m0 0v3.75a2.25 2.25 0 0 1-1.633 2.163l-1.319.377a1.803 1.803 0 0 1-.99-3.467l2.31-.66A2.25 2.25 0 0 0 9 15.553Z" />
-                    </svg>
-                    <span>Nada</span>
-                </div>
-                <span class="text-xs font-mono {{ request()->routeIs('admin.nadas.*') ? 'text-blue-200' : 'text-slate-400' }}">{{ $stats['total_nadas'] ?? '' }}</span>
-            </a>
-
             <a href="{{ route('admin.ads.edit') }}" 
                class="flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-base font-medium transition-colors {{ request()->routeIs('admin.ads.*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200' }}">
                 <svg class="h-5 w-5 {{ request()->routeIs('admin.ads.*') ? 'text-white' : 'text-slate-400' }}" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">

@@ -88,10 +88,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{music}', [AdminMusicController::class, 'destroy'])->name('destroy');
     });
 
+    // Dikelola dari modal "Kelola Nada Lagu" di halaman Lagu.
     Route::prefix('nadas')->name('nadas.')->group(function () {
-        Route::get('/', [NadaController::class, 'index'])->name('index');
         Route::post('/', [NadaController::class, 'store'])->name('store');
-        Route::get('/{nada}', [NadaController::class, 'show'])->name('show');
         Route::match(['put', 'patch'], '/{nada}', [NadaController::class, 'update'])->name('update');
         Route::delete('/{nada}', [NadaController::class, 'destroy'])->name('destroy');
     });
