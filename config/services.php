@@ -35,4 +35,21 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google Drive (penyimpanan file musik)
+    |--------------------------------------------------------------------------
+    |
+    | OAuth 2.0 milik akun Google pemilik Drive. Isi Client ID, Client Secret,
+    | dan Refresh Token langsung dari file .env (tanpa file JSON).
+    |
+    */
+
+    'google_drive' => [
+        'client_id' => env('GOOGLE_DRIVE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_DRIVE_CLIENT_SECRET'),
+        'refresh_token' => env('GOOGLE_DRIVE_REFRESH_TOKEN'),
+        'folder_id' => env('GOOGLE_DRIVE_FOLDER_ID'),
+    ],
+
 ];

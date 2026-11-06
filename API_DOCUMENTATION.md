@@ -730,6 +730,64 @@ Accept: application/json
 
 ---
 
+### G2. Musik (Music)
+
+Menu Musik memutar file MP3 yang diunggah admin ke Google Drive. Endpoint daftar dan streaming bersifat publik, sama seperti katalog lagu.
+
+---
+
+#### 1. Daftar Musik (List Music)
+Mengambil semua musik yang aktif (`is_active = true`) dan sudah selesai diunggah (`upload_status = ready`), diurutkan berdasarkan `sort_order` lalu judul.
+
+- **URL**: `/music`
+- **Method**: `GET`
+- **Query Parameter (Opsional)**: `search` (judul atau artis)
+
+##### Respons Berhasil (200 OK)
+```json
+{
+  "data": [
+    {
+      "musicid": 1,
+      "musictitle": "Nyanyian Pagi",
+      "musicartist": "NRM",
+      "musicfileid": "1AbCdEfGhIjKlMnOpQrStUvWxYz",
+      "musicfilename": "Nyanyian Pagi.mp3",
+      "musicmime": "audio/mpeg",
+      "musicduration": 225,
+      "musiccover": "music/covers/abc123.jpg",
+      "is_active": true,
+      "sort_order": 1,
+      "created_at": "2026-11-05T10:00:00.000000Z",
+      "updated_at": "2026-11-05T10:00:00.000000Z",
+      "cover_url": "https://domain.example/storage/music/covers/abc123.jpg",
+      "stream_url": "https://domain.example/api/music/1/stream"
+    }
+  ]
+}
+```
+
+---
+
+#### 2. Streaming Musik (Stream Music)
+Memutar file MP3 melalui proxy backend. Mendukung header `Range` sehingga pemutar dapat melakukan seek tanpa mengunduh seluruh file.
+
+- **URL**: `/music/{id}/stream` *(contoh: `/music/1/stream`)*
+- **Method**: `GET`
+- **Header Opsional**: `Range: bytes=0-1023`
+
+##### Respons Berhasil (200 OK / 206 Partial Content)
+```http
+Content-Type: audio/mpeg
+Accept-Ranges: bytes
+Content-Length: 1024
+Content-Range: bytes 0-1023/4096000
+```
+
+File asli tetap privat di Google Drive; aplikasi hanya mengakses URL proxy di atas.
+
+---
+
 ### H. Kelola Pengguna (Admin User Management)
 
 Endpoint untuk mengelola akun pengguna (`users`). Seluruh endpoint di bawah ini dilindungi oleh middleware `auth:sanctum` dan middleware `admin`. Pengguna dengan role `user` akan ditolak dengan respons `403 Forbidden`.

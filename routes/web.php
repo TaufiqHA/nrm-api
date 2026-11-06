@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\LyricController;
+use App\Http\Controllers\Admin\MusicController as AdminMusicController;
 use App\Http\Controllers\Admin\NadaController;
 use App\Http\Controllers\Admin\ProfileController;
 use App\Http\Controllers\Admin\SettingController;
@@ -75,6 +76,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('lyrics')->name('lyrics.')->group(function () {
         Route::get('/', [LyricController::class, 'index'])->name('index');
         Route::match(['put', 'patch'], '/{song}', [LyricController::class, 'update'])->name('update');
+    });
+
+    // Menu Musik — unggah MP3 ke Google Drive untuk diputar di aplikasi.
+    Route::prefix('music')->name('music.')->group(function () {
+        Route::get('/', [AdminMusicController::class, 'index'])->name('index');
+        Route::post('/', [AdminMusicController::class, 'store'])->name('store');
+        Route::match(['put', 'patch'], '/{music}', [AdminMusicController::class, 'update'])->name('update');
+        Route::post('/{music}/status', [AdminMusicController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/{music}', [AdminMusicController::class, 'destroy'])->name('destroy');
     });
 
     Route::prefix('nadas')->name('nadas.')->group(function () {

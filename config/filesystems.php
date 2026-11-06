@@ -24,14 +24,17 @@ return [
     | may even configure multiple disks for the same driver. Examples for
     | most supported storage drivers are configured here for reference.
     |
-    | Supported drivers: "local", "ftp", "sftp", "s3"
+    | Supported drivers: "local", "local_no_finfo", "ftp", "sftp", "s3"
+    |
+    | The "local_no_finfo" driver mirrors "local" without requiring PHP's
+    | fileinfo extension, which is unavailable on some production hosts.
     |
     */
 
     'disks' => [
 
         'local' => [
-            'driver' => 'local',
+            'driver' => 'local_no_finfo',
             'root' => storage_path('app/private'),
             'serve' => true,
             'throw' => false,
@@ -39,7 +42,7 @@ return [
         ],
 
         'public' => [
-            'driver' => 'local',
+            'driver' => 'local_no_finfo',
             'root' => storage_path('app/public'),
             'url' => rtrim(env('APP_URL', 'http://localhost'), '/').'/storage',
             'visibility' => 'public',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\MusicController;
 use App\Http\Controllers\NadaController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SongController;
@@ -16,6 +17,9 @@ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 Route::get('/songs', [SongController::class, 'index']);
 Route::get('/songs/{song}', [SongController::class, 'show']);
+
+Route::get('/music', [MusicController::class, 'index']);
+Route::get('/music/{music}/stream', [MusicController::class, 'stream'])->name('music.stream');
 
 Route::get('/settings', [SettingController::class, 'index']);
 
