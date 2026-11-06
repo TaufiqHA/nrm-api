@@ -6,6 +6,7 @@ use Database\Factories\SongFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Song extends Model
 {
@@ -99,5 +100,15 @@ class Song extends Model
     public function nada(): BelongsTo
     {
         return $this->belongsTo(Nada::class, 'songnada', 'nada');
+    }
+
+    /**
+     * File musik Google Drive yang terhubung dengan lagu ini.
+     *
+     * @return HasOne<Music, $this>
+     */
+    public function music(): HasOne
+    {
+        return $this->hasOne(Music::class, 'songid', 'songid');
     }
 }

@@ -119,6 +119,13 @@ class SongController extends Controller
 
         $song->update($validated);
 
+        if ($song->music !== null) {
+            $song->music->update([
+                'musictitle' => $song->songtitle,
+                'musicartist' => $song->songsinger,
+            ]);
+        }
+
         if ($isYoutube && $previousYoutubeUrl !== $submittedUrl) {
             $this->queueMediaDownload($song, force: true);
         }
@@ -199,6 +206,10 @@ class SongController extends Controller
      */
     public function destroy(Song $song): RedirectResponse
     {
+        if ($song->music !== null) {
+            $song->music->update(['songid' => null]);
+        }
+
         $song->delete();
 
         return redirect()->route('admin.songs.index')->with('success', 'Lagu berhasil dihapus dari katalog.');

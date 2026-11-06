@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\UploadMusicToDrive;
+use App\Models\Category;
 use App\Models\Music;
+use App\Models\Song;
 use App\Services\GoogleDriveService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
 use Throwable;
@@ -20,64 +23,119 @@ class MusicController extends Controller
     public function __construct(private readonly GoogleDriveService $drive) {}
 
     /**
-     * Daftar musik yang tersimpan.
+     * Daftar lagu katalog beserta file musiknya.
      */
     public function index(Request $request): View
     {
-        $query = Music::query();
+        $query = Song::query()->with(['category', 'music']);
 
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
-                $q->where('musictitle', 'like', "%{$search}%")
-                    ->orWhere('musicartist', 'like', "%{$search}%");
+                $q->where('songtitle', 'like', "%{$search}%")
+                    ->orWhere('songsinger', 'like', "%{$search}%");
             });
         }
 
-        $music = $query
-            ->orderBy('sort_order')
-            ->orderByDesc('musicid')
+        if ($request->filled('category')) {
+            $query->where('songcategory', $request->input('category'));
+        }
+
+        $songs = $query
+            ->orderByRaw('CAST(songsinger AS UNSIGNED) ASC')
+            ->orderBy('songtitle')
             ->paginate(10)
             ->withQueryString();
 
+        $categories = Category::orderBy('sort_order')->orderBy('songcategoryname')->get();
+
         return view('admin.music.index', [
-            'music' => $music,
+            'songs' => $songs,
+            'categories' => $categories,
             'driveConfigured' => $this->drive->isConfigured(),
         ]);
     }
 
     /**
-     * Unggah MP3 baru ke Google Drive lalu simpan metadata.
+     * Unggah atau perbarui file musik untuk satu lagu katalog.
      */
-    public function store(Request $request): RedirectResponse
+    public function uploadForSong(Request $request, Song $song): RedirectResponse
     {
         if ($response = $this->ensureUploadWithinServerLimits($request)) {
             return $response;
         }
 
-        $validated = $this->validateMusic($request, true);
-        $file = $request->file('file');
+        $music = $song->music;
+        $fileRequired = $music === null || ! is_string($music->musicfileid) || $music->musicfileid === '';
 
-        $music = Music::create([
-            'musictitle' => $validated['musictitle'],
-            'musicfileid' => null,
-            'musicmime' => $this->resolveMimeType($file),
-            'is_active' => $request->boolean('is_active'),
-            'sort_order' => (Music::max('sort_order') ?? 0) + 1,
-            'upload_status' => 'pending',
-            'pending_file_path' => $this->storePendingFile($file),
+        $request->validate([
+            'file' => [
+                $fileRequired ? 'required' : 'nullable',
+                'file',
+                'mimes:mp3',
+                'max:51200',
+            ],
+            'is_active' => ['nullable', 'boolean'],
+        ], [
+            'file.required' => 'File MP3 wajib dipilih.',
+            'file.mimes' => 'File musik harus berformat MP3.',
+            'file.max' => 'Ukuran file MP3 maksimal 50 MB.',
+            'file.uploaded' => 'File gagal diunggah. Ukuran file kemungkinan melebihi batas PHP server (upload_max_filesize).',
         ]);
 
-        UploadMusicToDrive::dispatch($music->musicid);
+        if ($request->hasFile('file')) {
+            if ($music !== null && in_array($music->upload_status, ['pending', 'processing'], true)) {
+                return back()->withInput()->with(
+                    'error',
+                    'File musik sedang diunggah. Tunggu sampai selesai sebelum mengganti file.',
+                );
+            }
 
-        return redirect()->route('admin.music.index')->with(
-            'success',
-            'Musik berhasil ditambahkan. File sedang diunggah ke Google Drive di latar belakang.',
-        );
+            $file = $request->file('file');
+
+            if ($music?->pending_file_path) {
+                Storage::disk('local')->delete($music->pending_file_path);
+            }
+
+            $music ??= new Music([
+                'songid' => $song->songid,
+                'sort_order' => (Music::max('sort_order') ?? 0) + 1,
+            ]);
+
+            $music->fill([
+                'musictitle' => $song->songtitle,
+                'musicartist' => $song->songsinger,
+                'musicmime' => $this->resolveMimeType($file),
+                'is_active' => $request->boolean('is_active'),
+                'upload_status' => 'pending',
+                'upload_error' => null,
+                'pending_file_path' => $this->storePendingFile($file),
+            ]);
+            $music->save();
+
+            UploadMusicToDrive::dispatch($music->musicid);
+
+            return redirect()->route('admin.music.index')->with(
+                'success',
+                'File musik lagu "'.$song->songtitle.'" sedang diunggah ke Google Drive di latar belakang.',
+            );
+        }
+
+        if ($music === null) {
+            return back()->withInput()->with('error', 'Pilih file MP3 terlebih dahulu.');
+        }
+
+        $music->update([
+            'musictitle' => $song->songtitle,
+            'musicartist' => $song->songsinger,
+            'is_active' => $request->boolean('is_active'),
+        ]);
+
+        return redirect()->route('admin.music.index')->with('success', 'Data musik berhasil diperbarui.');
     }
 
     /**
-     * Perbarui metadata dan/atau ganti file MP3.
+     * Perbarui metadata dan/atau ganti file MP3 musik lama.
      */
     public function update(Request $request, Music $music): RedirectResponse
     {
@@ -86,6 +144,26 @@ class MusicController extends Controller
         }
 
         $validated = $this->validateMusic($request, false);
+
+        $linkSongId = $request->input('songid');
+
+        if ($linkSongId !== null && $linkSongId !== '') {
+            $request->validate([
+                'songid' => [
+                    'integer',
+                    'exists:tb_songs,songid',
+                    Rule::unique('tb_music', 'songid')->ignore($music->musicid, 'musicid'),
+                ],
+            ], [
+                'songid.exists' => 'Lagu yang dipilih tidak ditemukan.',
+                'songid.unique' => 'Lagu tersebut sudah memiliki file musik.',
+            ]);
+
+            $linkedSong = Song::findOrFail($linkSongId);
+            $validated['songid'] = $linkedSong->songid;
+            $validated['musictitle'] = $linkedSong->songtitle;
+            $validated['musicartist'] = $linkedSong->songsinger;
+        }
 
         if ($request->hasFile('file')) {
             if (in_array($music->upload_status, ['pending', 'processing'], true)) {
@@ -103,6 +181,8 @@ class MusicController extends Controller
 
             $music->fill([
                 'musictitle' => $validated['musictitle'],
+                'musicartist' => $validated['musicartist'] ?? $music->musicartist,
+                'songid' => $validated['songid'] ?? $music->songid,
                 'is_active' => $request->boolean('is_active'),
                 'musicmime' => $this->resolveMimeType($file),
                 'upload_status' => 'pending',
@@ -121,6 +201,8 @@ class MusicController extends Controller
 
         $music->update([
             'musictitle' => $validated['musictitle'],
+            'musicartist' => $validated['musicartist'] ?? $music->musicartist,
+            'songid' => $validated['songid'] ?? $music->songid,
             'is_active' => $request->boolean('is_active'),
         ]);
 

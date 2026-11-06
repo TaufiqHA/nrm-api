@@ -2,7 +2,9 @@
 
 use App\Enums\UserRole;
 use App\Jobs\UploadMusicToDrive;
+use App\Models\Category;
 use App\Models\Music;
+use App\Models\Song;
 use App\Models\User;
 use App\Services\GoogleDriveService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,12 +27,18 @@ test('regular user is forbidden from accessing admin music', function () {
     $this->actingAs($user)->get('/admin/music')->assertStatus(403);
 });
 
-test('admin can view music list', function () {
+test('admin can view songs from the catalog in the music list', function () {
     $admin = User::factory()->admin()->create();
 
+    $song = Song::factory()->create([
+        'songtitle' => 'Nyanyian Pagi',
+        'songsinger' => '12',
+    ]);
+
     Music::create([
-        'musictitle' => 'Nyanyian Pagi',
-        'musicartist' => 'NRM',
+        'songid' => $song->songid,
+        'musictitle' => $song->songtitle,
+        'musicartist' => $song->songsinger,
         'musicfileid' => 'drive-1',
         'is_active' => true,
         'sort_order' => 1,
@@ -39,20 +47,53 @@ test('admin can view music list', function () {
     $response = $this->actingAs($admin)->get('/admin/music');
 
     $response->assertStatus(200);
-    $response->assertSee('Tambah Musik');
+    $response->assertSee('Kelola Katalog Lagu');
     $response->assertSee('Nyanyian Pagi');
-    $response->assertSee('onclick="openEditModal(', false);
-    $response->assertSee('onclick="openDeleteModal(', false);
+    $response->assertSee('onclick="openSongModal(this)"', false);
+    $response->assertSee('Hapus File');
 });
 
-test('admin can upload a music file in the background', function () {
+test('songs without a music file are still listed', function () {
+    $admin = User::factory()->admin()->create();
+
+    Song::factory()->create(['songtitle' => 'Belum Ada Musik']);
+
+    $response = $this->actingAs($admin)->get('/admin/music');
+
+    $response->assertStatus(200);
+    $response->assertSee('Belum Ada Musik');
+    $response->assertSee('Belum ada file');
+    $response->assertSee('Upload');
+});
+
+test('legacy music without a song relation is not shown in the music list', function () {
+    $admin = User::factory()->admin()->create();
+
+    Music::create([
+        'musictitle' => 'Musik Lama',
+        'musicfileid' => 'drive-old',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/music');
+
+    $response->assertStatus(200);
+    $response->assertDontSee('Musik Tanpa Katalog Lagu');
+    $response->assertDontSee('Musik Lama');
+});
+
+test('admin can upload a music file for an existing song in the background', function () {
     Storage::fake('local');
     Queue::fake();
 
     $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create([
+        'songtitle' => 'Lagu Baru',
+        'songsinger' => '21',
+    ]);
 
-    $response = $this->actingAs($admin)->post('/admin/music', [
-        'musictitle' => 'Lagu Baru',
+    $response = $this->actingAs($admin)->put('/admin/music/songs/'.$song->songid, [
         'is_active' => '1',
         'file' => UploadedFile::fake()->create('lagu.mp3', 1024, 'audio/mpeg'),
     ]);
@@ -62,6 +103,9 @@ test('admin can upload a music file in the background', function () {
     $music = Music::first();
 
     expect($music)->not->toBeNull()
+        ->and($music->songid)->toBe($song->songid)
+        ->and($music->musictitle)->toBe('Lagu Baru')
+        ->and($music->musicartist)->toBe('21')
         ->and($music->upload_status)->toBe('pending')
         ->and($music->musicfileid)->toBeNull()
         ->and($music->pending_file_path)->not->toBeNull();
@@ -72,12 +116,14 @@ test('admin can upload a music file in the background', function () {
     });
 });
 
-test('replacing a music file queues a background upload', function () {
+test('replacing a song music file queues a background upload without duplicating the record', function () {
     Storage::fake('local');
     Queue::fake();
 
     $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create(['songtitle' => 'Judul Lama']);
     $music = Music::create([
+        'songid' => $song->songid,
         'musictitle' => 'Judul Lama',
         'musicfileid' => 'drive-old',
         'is_active' => true,
@@ -85,8 +131,7 @@ test('replacing a music file queues a background upload', function () {
         'upload_status' => 'ready',
     ]);
 
-    $response = $this->actingAs($admin)->put('/admin/music/'.$music->musicid, [
-        'musictitle' => 'Judul Baru',
+    $response = $this->actingAs($admin)->put('/admin/music/songs/'.$song->songid, [
         'is_active' => '1',
         'file' => UploadedFile::fake()->create('lagu-baru.mp3', 1024, 'audio/mpeg'),
     ]);
@@ -95,7 +140,7 @@ test('replacing a music file queues a background upload', function () {
 
     $music->refresh();
 
-    expect($music->musictitle)->toBe('Judul Baru')
+    expect(Music::count())->toBe(1)
         ->and($music->upload_status)->toBe('pending')
         ->and($music->musicfileid)->toBe('drive-old')
         ->and($music->pending_file_path)->not->toBeNull();
@@ -103,14 +148,14 @@ test('replacing a music file queues a background upload', function () {
     Queue::assertPushed(UploadMusicToDrive::class);
 });
 
-test('upload without active checkbox stores music as inactive', function () {
+test('upload without active checkbox stores song music as inactive', function () {
     Storage::fake('local');
     Queue::fake();
 
     $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create();
 
-    $this->actingAs($admin)->post('/admin/music', [
-        'musictitle' => 'Belum Tampil',
+    $this->actingAs($admin)->put('/admin/music/songs/'.$song->songid, [
         'file' => UploadedFile::fake()->create('lagu.mp3', 1024, 'audio/mpeg'),
     ]);
 
@@ -119,9 +164,9 @@ test('upload without active checkbox stores music as inactive', function () {
 
 test('upload rejects non mp3 files', function () {
     $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create();
 
-    $response = $this->actingAs($admin)->post('/admin/music', [
-        'musictitle' => 'Bukan MP3',
+    $response = $this->actingAs($admin)->put('/admin/music/songs/'.$song->songid, [
         'file' => UploadedFile::fake()->create('dokumen.pdf', 100, 'application/pdf'),
     ]);
 
@@ -129,7 +174,19 @@ test('upload rejects non mp3 files', function () {
     expect(Music::count())->toBe(0);
 });
 
-test('admin can update music metadata', function () {
+test('upload requires a file when the song has no music yet', function () {
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/music/songs/'.$song->songid, [
+        'is_active' => '1',
+    ]);
+
+    $response->assertSessionHasErrors('file');
+    expect(Music::count())->toBe(0);
+});
+
+test('admin can update legacy music metadata', function () {
     $admin = User::factory()->admin()->create();
     $music = Music::create([
         'musictitle' => 'Judul Lama',
@@ -148,7 +205,95 @@ test('admin can update music metadata', function () {
     $music->refresh();
 
     expect($music->musictitle)->toBe('Judul Baru')
-        ->and($music->musicfileid)->toBe('drive-1');
+        ->and($music->musicfileid)->toBe('drive-1')
+        ->and($music->songid)->toBeNull();
+});
+
+test('admin can link legacy music to a catalog song', function () {
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create([
+        'songtitle' => 'Lagu Tujuan',
+        'songsinger' => '33',
+    ]);
+    $music = Music::create([
+        'musictitle' => 'Judul Lama',
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/music/'.$music->musicid, [
+        'musictitle' => 'Judul Lama',
+        'songid' => $song->songid,
+        'is_active' => '1',
+    ]);
+
+    $response->assertRedirect(route('admin.music.index'));
+
+    $music->refresh();
+
+    expect($music->songid)->toBe($song->songid)
+        ->and($music->musictitle)->toBe('Lagu Tujuan')
+        ->and($music->musicartist)->toBe('33');
+});
+
+test('linking music to a song that already has music is rejected', function () {
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create();
+
+    Music::create([
+        'songid' => $song->songid,
+        'musictitle' => $song->songtitle,
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $legacy = Music::create([
+        'musictitle' => 'Musik Lama',
+        'musicfileid' => 'drive-2',
+        'is_active' => true,
+        'sort_order' => 2,
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/music/'.$legacy->musicid, [
+        'musictitle' => 'Musik Lama',
+        'songid' => $song->songid,
+        'is_active' => '1',
+    ]);
+
+    $response->assertSessionHasErrors('songid');
+    expect($legacy->refresh()->songid)->toBeNull();
+});
+
+test('updating a song title syncs the linked music metadata', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+    $song = Song::factory()->create([
+        'songtitle' => 'Judul Awal',
+        'songsinger' => '10',
+        'songcategory' => $category->songcategoryid,
+    ]);
+    $music = Music::create([
+        'songid' => $song->songid,
+        'musictitle' => 'Judul Awal',
+        'musicartist' => '10',
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/songs/'.$song->songid, [
+        'songtitle' => 'Judul Baru',
+        'songsinger' => '11',
+        'songcategory' => $category->songcategoryid,
+        'songurl' => 'https://example.com/lagu.mp3',
+    ]);
+
+    $response->assertRedirect(route('admin.songs.index'));
+
+    expect($music->refresh()->musictitle)->toBe('Judul Baru')
+        ->and($music->musicartist)->toBe('11');
 });
 
 test('admin can delete music and its drive file', function () {

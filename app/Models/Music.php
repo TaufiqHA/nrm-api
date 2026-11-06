@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 class Music extends Model
@@ -18,6 +19,7 @@ class Music extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'songid',
         'musictitle',
         'musicartist',
         'musicfileid',
@@ -72,6 +74,16 @@ class Music extends Model
     public function getStreamUrlAttribute(): string
     {
         return url('/api/music/'.$this->musicid.'/stream');
+    }
+
+    /**
+     * Lagu katalog yang menjadi sumber metadata musik ini.
+     *
+     * @return BelongsTo<Song, $this>
+     */
+    public function song(): BelongsTo
+    {
+        return $this->belongsTo(Song::class, 'songid', 'songid');
     }
 
     /**

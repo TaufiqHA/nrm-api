@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Music;
+use App\Models\Song;
 use App\Services\GoogleDriveService;
 use GuzzleHttp\Psr7\Utils;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -65,6 +66,29 @@ test('music endpoint can search by title or artist', function () {
         ->assertOk()
         ->assertJsonCount(1, 'data')
         ->assertJsonPath('data.0.musictitle', 'Pujian Pagi');
+});
+
+test('music endpoint returns uploaded music linked to a catalog song', function () {
+    $song = Song::factory()->create([
+        'songtitle' => 'Pujian Sore',
+        'songsinger' => '7',
+    ]);
+
+    Music::create([
+        'songid' => $song->songid,
+        'musictitle' => $song->songtitle,
+        'musicartist' => $song->songsinger,
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $this->getJson('/api/music')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.songid', $song->songid)
+        ->assertJsonPath('data.0.musictitle', 'Pujian Sore')
+        ->assertJsonPath('data.0.musicartist', '7');
 });
 
 test('stream endpoint proxies drive content with range support', function () {

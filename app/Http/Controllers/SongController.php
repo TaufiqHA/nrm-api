@@ -94,6 +94,13 @@ class SongController extends Controller
 
         $song->update($validated);
 
+        if ($song->music !== null) {
+            $song->music->update([
+                'musictitle' => $song->songtitle,
+                'musicartist' => $song->songsinger,
+            ]);
+        }
+
         return response()->json([
             'message' => 'Song updated successfully',
             'data' => $song->fresh()->load('category'),
@@ -105,6 +112,10 @@ class SongController extends Controller
      */
     public function destroy(Song $song): JsonResponse
     {
+        if ($song->music !== null) {
+            $song->music->update(['songid' => null]);
+        }
+
         $song->delete();
 
         return response()->json([
