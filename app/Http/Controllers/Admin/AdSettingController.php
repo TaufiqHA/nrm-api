@@ -54,6 +54,21 @@ class AdSettingController extends Controller
             'applicationadslyricbottomunit' => '',
             'applicationadslyricbottomactive' => 'Y',
             'applicationadslyricbottomclickurl' => '',
+            'applicationadsmusiktop' => '',
+            'applicationadsmusiktoptype' => 'image',
+            'applicationadsmusiktopunit' => '',
+            'applicationadsmusiktopactive' => 'Y',
+            'applicationadsmusiktopclickurl' => '',
+            'applicationadsmusik' => '',
+            'applicationadsmusiktype' => 'image',
+            'applicationadsmusikunit' => '',
+            'applicationadsmusikactive' => 'Y',
+            'applicationadsmusikclickurl' => '',
+            'applicationadsmusikbottom' => '',
+            'applicationadsmusikbottomtype' => 'image',
+            'applicationadsmusikbottomunit' => '',
+            'applicationadsmusikbottomactive' => 'Y',
+            'applicationadsmusikbottomclickurl' => '',
             'applicationadsactive' => 'Y',
             'applicationadsbottom' => '',
             'applicationadsbottomtype' => 'image',
@@ -68,7 +83,8 @@ class AdSettingController extends Controller
     }
 
     /**
-     * Update the ad configuration (slot 1, slot 2, halaman utama, halaman lirik, dan banner bawah).
+     * Update the ad configuration (slot 1, slot 2, halaman utama, halaman lirik,
+     * halaman BUKU MERAH (Musik), dan banner bawah).
      *
      * Field identitas aplikasi (nama perusahaan & nama aplikasi) dikelola di
      * halaman Pengaturan dan sengaja tidak disentuh di sini.
@@ -108,6 +124,21 @@ class AdSettingController extends Controller
             'applicationadslyricbottomunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadslyricbottomtype,'.$admobTypes],
             'applicationadslyricbottomactive' => ['nullable', 'in:Y,N'],
             'applicationadslyricbottomclickurl' => ['nullable', 'url:http,https', 'max:2048'],
+            'applicationadsmusiktop' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'applicationadsmusiktoptype' => ['nullable', 'string', 'in:image,'.$admobTypes],
+            'applicationadsmusiktopunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadsmusiktoptype,'.$admobTypes],
+            'applicationadsmusiktopactive' => ['nullable', 'in:Y,N'],
+            'applicationadsmusiktopclickurl' => ['nullable', 'url:http,https', 'max:2048'],
+            'applicationadsmusik' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'applicationadsmusiktype' => ['nullable', 'string', 'in:image,'.$admobTypes],
+            'applicationadsmusikunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadsmusiktype,'.$admobTypes],
+            'applicationadsmusikactive' => ['nullable', 'in:Y,N'],
+            'applicationadsmusikclickurl' => ['nullable', 'url:http,https', 'max:2048'],
+            'applicationadsmusikbottom' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'applicationadsmusikbottomtype' => ['nullable', 'string', 'in:image,'.$admobTypes],
+            'applicationadsmusikbottomunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadsmusikbottomtype,'.$admobTypes],
+            'applicationadsmusikbottomactive' => ['nullable', 'in:Y,N'],
+            'applicationadsmusikbottomclickurl' => ['nullable', 'url:http,https', 'max:2048'],
             'applicationadsbottom' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
             'applicationadsbottomtype' => ['nullable', 'string', 'in:image,'.$admobTypes],
             'applicationadsbottomunit' => ['nullable', 'string', 'max:255', 'required_if:applicationadsbottomtype,'.$admobTypes],
@@ -119,6 +150,9 @@ class AdSettingController extends Controller
             'delete_applicationadslyric' => ['nullable', 'boolean'],
             'delete_applicationadslyrictop' => ['nullable', 'boolean'],
             'delete_applicationadslyricbottom' => ['nullable', 'boolean'],
+            'delete_applicationadsmusiktop' => ['nullable', 'boolean'],
+            'delete_applicationadsmusik' => ['nullable', 'boolean'],
+            'delete_applicationadsmusikbottom' => ['nullable', 'boolean'],
             'delete_applicationadsbottom' => ['nullable', 'boolean'],
         ], [
             'applicationads1.image' => 'Banner iklan slot 1 harus berupa file gambar.',
@@ -165,6 +199,27 @@ class AdSettingController extends Controller
             'applicationadslyricbottomactive.in' => 'Status iklan bawah halaman lirik harus bernilai Y atau N.',
             'applicationadslyricbottomclickurl.url' => 'URL tujuan banner bawah halaman lirik harus berupa URL yang valid.',
             'applicationadslyricbottomclickurl.max' => 'URL tujuan banner bawah halaman lirik maksimal 2048 karakter.',
+            'applicationadsmusiktop.image' => 'Banner iklan atas halaman musik harus berupa file gambar.',
+            'applicationadsmusiktop.max' => 'Ukuran file banner atas halaman musik maksimal 2MB.',
+            'applicationadsmusiktoptype.in' => 'Jenis iklan atas halaman musik tidak dikenali.',
+            'applicationadsmusiktopunit.required_if' => 'Ad Unit ID AdMob atas halaman musik wajib diisi.',
+            'applicationadsmusiktopactive.in' => 'Status iklan atas halaman musik harus bernilai Y atau N.',
+            'applicationadsmusiktopclickurl.url' => 'URL tujuan banner atas halaman musik harus berupa URL yang valid.',
+            'applicationadsmusiktopclickurl.max' => 'URL tujuan banner atas halaman musik maksimal 2048 karakter.',
+            'applicationadsmusik.image' => 'Banner iklan pop-up halaman musik harus berupa file gambar.',
+            'applicationadsmusik.max' => 'Ukuran file banner pop-up halaman musik maksimal 2MB.',
+            'applicationadsmusiktype.in' => 'Jenis iklan pop-up halaman musik tidak dikenali.',
+            'applicationadsmusikunit.required_if' => 'Ad Unit ID AdMob pop-up halaman musik wajib diisi.',
+            'applicationadsmusikactive.in' => 'Status iklan pop-up halaman musik harus bernilai Y atau N.',
+            'applicationadsmusikclickurl.url' => 'URL tujuan banner pop-up halaman musik harus berupa URL yang valid.',
+            'applicationadsmusikclickurl.max' => 'URL tujuan banner pop-up halaman musik maksimal 2048 karakter.',
+            'applicationadsmusikbottom.image' => 'Banner iklan bawah halaman musik harus berupa file gambar.',
+            'applicationadsmusikbottom.max' => 'Ukuran file banner bawah halaman musik maksimal 2MB.',
+            'applicationadsmusikbottomtype.in' => 'Jenis iklan bawah halaman musik tidak dikenali.',
+            'applicationadsmusikbottomunit.required_if' => 'Ad Unit ID AdMob bawah halaman musik wajib diisi.',
+            'applicationadsmusikbottomactive.in' => 'Status iklan bawah halaman musik harus bernilai Y atau N.',
+            'applicationadsmusikbottomclickurl.url' => 'URL tujuan banner bawah halaman musik harus berupa URL yang valid.',
+            'applicationadsmusikbottomclickurl.max' => 'URL tujuan banner bawah halaman musik maksimal 2048 karakter.',
             'applicationadsbottom.image' => 'Banner iklan bawah harus berupa file gambar.',
             'applicationadsbottom.max' => 'Ukuran file banner iklan bawah maksimal 2MB.',
             'applicationadsbottomtype.in' => 'Jenis iklan bawah tidak dikenali.',
@@ -178,13 +233,13 @@ class AdSettingController extends Controller
         $setting = Setting::first();
 
         // Normalisasi nilai default jenis iklan bila tidak dikirim oleh form.
-        foreach (['applicationads1type', 'applicationads2type', 'applicationadshometype', 'applicationadslyrictype', 'applicationadslyrictoptype', 'applicationadslyricbottomtype', 'applicationadsbottomtype'] as $typeField) {
+        foreach (['applicationads1type', 'applicationads2type', 'applicationadshometype', 'applicationadslyrictype', 'applicationadslyrictoptype', 'applicationadslyricbottomtype', 'applicationadsmusiktoptype', 'applicationadsmusiktype', 'applicationadsmusikbottomtype', 'applicationadsbottomtype'] as $typeField) {
             if (empty($validated[$typeField])) {
                 $validated[$typeField] = $setting?->$typeField ?? 'image';
             }
         }
 
-        $adFields = ['applicationads1', 'applicationads2', 'applicationadshome', 'applicationadslyric', 'applicationadslyrictop', 'applicationadslyricbottom', 'applicationadsbottom'];
+        $adFields = ['applicationads1', 'applicationads2', 'applicationadshome', 'applicationadslyric', 'applicationadslyrictop', 'applicationadslyricbottom', 'applicationadsmusiktop', 'applicationadsmusik', 'applicationadsmusikbottom', 'applicationadsbottom'];
         foreach ($adFields as $field) {
             if ($request->hasFile($field)) {
                 if ($setting && $setting->$field && ! filter_var($setting->$field, FILTER_VALIDATE_URL) && Storage::disk('public')->exists($setting->$field)) {

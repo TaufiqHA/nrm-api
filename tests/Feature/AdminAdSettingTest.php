@@ -491,3 +491,111 @@ test('admin save rejects unknown ad type', function () {
 
     $response->assertSessionHasErrors(['applicationads1type']);
 });
+
+test('admin ads page shows the music page slots', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->get('/admin/ads');
+
+    $response->assertStatus(200);
+    $response->assertSee('Iklan Halaman BUKU MERAH (Musik)');
+    $response->assertSee('Halaman Musik — Atas');
+    $response->assertSee('Halaman Musik — Pop-up');
+    $response->assertSee('Halaman Musik — Bawah');
+    $response->assertSee('name="applicationadsmusiktopactive"', false);
+    $response->assertSee('name="applicationadsmusikactive"', false);
+    $response->assertSee('name="applicationadsmusikbottomactive"', false);
+    $response->assertSee('name="applicationadsmusiktopclickurl"', false);
+    $response->assertSee('name="applicationadsmusikclickurl"', false);
+    $response->assertSee('name="applicationadsmusikbottomclickurl"', false);
+});
+
+test('admin can save music page top popup and bottom slots', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $topBanner = UploadedFile::fake()->image('musik-top.jpg', 600, 200);
+    $bottomBanner = UploadedFile::fake()->image('musik-bottom.jpg', 600, 200);
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'applicationadsmusiktop' => $topBanner,
+        'applicationadsmusiktopactive' => 'Y',
+        'applicationadsmusiktopclickurl' => 'https://example.com/musik-top',
+        'applicationadsmusiktype' => 'admob_banner',
+        'applicationadsmusikunit' => 'ca-app-pub-1234567890123456/6666666666',
+        'applicationadsmusikactive' => 'N',
+        'applicationadsmusikbottom' => $bottomBanner,
+        'applicationadsmusikbottomactive' => 'Y',
+        'applicationadsmusikbottomclickurl' => 'https://example.com/musik-bottom',
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadsmusiktop)->not->toBeNull()
+        ->and($setting->applicationadsmusiktopactive)->toBe('Y')
+        ->and($setting->applicationadsmusiktopclickurl)->toBe('https://example.com/musik-top')
+        ->and($setting->applicationadsmusiktype)->toBe('admob_banner')
+        ->and($setting->applicationadsmusikunit)->toBe('ca-app-pub-1234567890123456/6666666666')
+        ->and($setting->applicationadsmusikactive)->toBe('N')
+        ->and($setting->applicationadsmusikbottom)->not->toBeNull()
+        ->and($setting->applicationadsmusikbottomactive)->toBe('Y')
+        ->and($setting->applicationadsmusikbottomclickurl)->toBe('https://example.com/musik-bottom');
+
+    Storage::disk('public')->assertExists($setting->applicationadsmusiktop);
+    Storage::disk('public')->assertExists($setting->applicationadsmusikbottom);
+});
+
+test('admin save requires ad unit id for music page admob slots', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'applicationadsmusiktoptype' => 'admob_native',
+        'applicationadsmusiktopunit' => '',
+        'applicationadsmusiktype' => 'admob_banner',
+        'applicationadsmusikunit' => '',
+        'applicationadsmusikbottomtype' => 'admob_interstitial',
+        'applicationadsmusikbottomunit' => '',
+    ]);
+
+    $response->assertSessionHasErrors([
+        'applicationadsmusiktopunit',
+        'applicationadsmusikunit',
+        'applicationadsmusikbottomunit',
+    ]);
+});
+
+test('deleting music page banner also clears its click url', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    $bannerPath = UploadedFile::fake()->image('musik-banner.jpg')->store('banners', 'public');
+
+    Setting::factory()->create([
+        'applicationadsmusiktop' => $bannerPath,
+        'applicationadsmusiktopclickurl' => 'https://example.com/musik-promo',
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'delete_applicationadsmusiktop' => '1',
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+
+    $setting = Setting::first();
+    expect($setting->applicationadsmusiktop)->toBeNull()
+        ->and($setting->applicationadsmusiktopclickurl)->toBeNull();
+
+    Storage::disk('public')->assertMissing($bannerPath);
+});

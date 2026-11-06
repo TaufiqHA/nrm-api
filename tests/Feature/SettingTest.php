@@ -452,3 +452,67 @@ test('admin settings api rejects invalid ad type', function () {
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['applicationads1type']);
 });
+
+test('admin can save music page ads via api', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'Media Prima Nusantara',
+        'applicationname' => 'Karaoke Music Page',
+        'applicationadsmusiktop' => 'https://example.com/musik-top.jpg',
+        'applicationadsmusiktoptype' => 'image',
+        'applicationadsmusiktopactive' => 'Y',
+        'applicationadsmusiktopclickurl' => 'https://example.com/musik-top',
+        'applicationadsmusiktype' => 'admob_banner',
+        'applicationadsmusikunit' => 'ca-app-pub-1234567890123456/6666666666',
+        'applicationadsmusikactive' => 'N',
+        'applicationadsmusikbottomtype' => 'admob_banner',
+        'applicationadsmusikbottomunit' => 'ca-app-pub-1234567890123456/7777777777',
+        'applicationadsmusikbottomactive' => 'Y',
+        'applicationadsmusikbottomclickurl' => 'https://example.com/musik-bottom',
+    ]);
+
+    $response->assertStatus(201)
+        ->assertJson([
+            'data' => [
+                'applicationadsmusiktop' => 'https://example.com/musik-top.jpg',
+                'applicationadsmusiktopactive' => 'Y',
+                'applicationadsmusiktopclickurl' => 'https://example.com/musik-top',
+                'applicationadsmusiktype' => 'admob_banner',
+                'applicationadsmusikunit' => 'ca-app-pub-1234567890123456/6666666666',
+                'applicationadsmusikactive' => 'N',
+                'applicationadsmusikbottomtype' => 'admob_banner',
+                'applicationadsmusikbottomunit' => 'ca-app-pub-1234567890123456/7777777777',
+                'applicationadsmusikbottomactive' => 'Y',
+                'applicationadsmusikbottomclickurl' => 'https://example.com/musik-bottom',
+            ],
+        ]);
+
+    $this->assertDatabaseHas('tb_application', [
+        'applicationadsmusiktopactive' => 'Y',
+        'applicationadsmusikactive' => 'N',
+        'applicationadsmusikbottomtype' => 'admob_banner',
+        'applicationadsmusikbottomactive' => 'Y',
+    ]);
+});
+
+test('admin settings api rejects invalid music page ad values', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'PT ABC',
+        'applicationname' => 'Karaoke App',
+        'applicationadsmusiktopclickurl' => 'bukan-url',
+        'applicationadsmusikactive' => 'INVALID',
+        'applicationadsmusikbottomtype' => 'not_a_type',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors([
+            'applicationadsmusiktopclickurl',
+            'applicationadsmusikactive',
+            'applicationadsmusikbottomtype',
+        ]);
+});
