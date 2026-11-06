@@ -81,6 +81,44 @@ test('legacy music without a song relation is not shown in the music list', func
     $response->assertStatus(200);
     $response->assertDontSee('Musik Tanpa Katalog Lagu');
     $response->assertDontSee('Musik Lama');
+    $response->assertDontSee('Tambah Musik');
+});
+
+test('admin can add standalone music without a catalog song', function () {
+    Storage::fake('local');
+    Queue::fake();
+
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->post('/admin/music', [
+        'musictitle' => 'Musik Mandiri',
+        'is_active' => '1',
+        'file' => UploadedFile::fake()->create('mandiri.mp3', 1024, 'audio/mpeg'),
+    ]);
+
+    $response->assertRedirect(route('admin.music.index'));
+
+    $music = Music::first();
+
+    expect($music)->not->toBeNull()
+        ->and($music->songid)->toBeNull()
+        ->and($music->musictitle)->toBe('Musik Mandiri')
+        ->and($music->upload_status)->toBe('pending')
+        ->and($music->pending_file_path)->not->toBeNull();
+
+    Queue::assertPushed(UploadMusicToDrive::class);
+});
+
+test('standalone music upload rejects non mp3 files', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->post('/admin/music', [
+        'musictitle' => 'Bukan MP3',
+        'file' => UploadedFile::fake()->create('dokumen.pdf', 100, 'application/pdf'),
+    ]);
+
+    $response->assertSessionHasErrors('file');
+    expect(Music::count())->toBe(0);
 });
 
 test('admin can upload a music file for an existing song in the background', function () {

@@ -81,6 +81,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Menu Musik — unggah MP3 ke Google Drive untuk lagu dari katalog.
     Route::prefix('music')->name('music.')->group(function () {
         Route::get('/', [AdminMusicController::class, 'index'])->name('index');
+        Route::post('/', [AdminMusicController::class, 'store'])->name('store');
         Route::match(['put', 'patch'], '/songs/{song}', [AdminMusicController::class, 'uploadForSong'])->name('songs.upload');
         Route::match(['put', 'patch'], '/{music}', [AdminMusicController::class, 'update'])->name('update');
         Route::post('/{music}/status', [AdminMusicController::class, 'updateStatus'])->name('update-status');

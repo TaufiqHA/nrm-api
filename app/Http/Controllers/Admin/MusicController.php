@@ -57,6 +57,37 @@ class MusicController extends Controller
     }
 
     /**
+     * Unggah MP3 mandiri yang tidak terhubung ke katalog lagu.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        if ($response = $this->ensureUploadWithinServerLimits($request)) {
+            return $response;
+        }
+
+        $validated = $this->validateMusic($request, true);
+        $file = $request->file('file');
+
+        $music = Music::create([
+            'songid' => null,
+            'musictitle' => $validated['musictitle'],
+            'musicfileid' => null,
+            'musicmime' => $this->resolveMimeType($file),
+            'is_active' => $request->boolean('is_active'),
+            'sort_order' => (Music::max('sort_order') ?? 0) + 1,
+            'upload_status' => 'pending',
+            'pending_file_path' => $this->storePendingFile($file),
+        ]);
+
+        UploadMusicToDrive::dispatch($music->musicid);
+
+        return redirect()->route('admin.music.index')->with(
+            'success',
+            'Musik berhasil ditambahkan. File sedang diunggah ke Google Drive di latar belakang.',
+        );
+    }
+
+    /**
      * Unggah atau perbarui file musik untuk satu lagu katalog.
      */
     public function uploadForSong(Request $request, Song $song): RedirectResponse
