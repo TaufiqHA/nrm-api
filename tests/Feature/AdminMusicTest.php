@@ -66,6 +66,54 @@ test('songs without a music file are still listed', function () {
     $response->assertSee('Upload');
 });
 
+test('admin music page marks existing drive files as ready', function () {
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create([
+        'songtitle' => 'Sudah di Drive',
+        'songsinger' => '3',
+    ]);
+
+    $music = Music::create([
+        'songid' => $song->songid,
+        'musictitle' => $song->songtitle,
+        'musicartist' => $song->songsinger,
+        'musicfileid' => 'drive-1',
+        'musicfilename' => 'lagu.mp3',
+        'is_active' => true,
+        'sort_order' => 1,
+        'upload_status' => 'failed',
+        'upload_error' => 'Worker berhenti sebelum menyimpan status.',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/music');
+
+    $response->assertOk()->assertSee('Siap');
+
+    expect($music->refresh()->upload_status)->toBe('ready')
+        ->and($music->upload_error)->toBeNull();
+});
+
+test('admin music page keeps an in-progress upload marked as uploading', function () {
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create(['songtitle' => 'Sedang Unggah']);
+
+    $music = Music::create([
+        'songid' => $song->songid,
+        'musictitle' => $song->songtitle,
+        'musicfileid' => 'drive-old',
+        'is_active' => true,
+        'sort_order' => 1,
+        'upload_status' => 'pending',
+        'pending_file_path' => 'music/pending/baru.mp3',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/music');
+
+    $response->assertOk()->assertSee('Mengunggah');
+
+    expect($music->refresh()->upload_status)->toBe('pending');
+});
+
 test('legacy music without a song relation is not shown in the music list', function () {
     $admin = User::factory()->admin()->create();
 

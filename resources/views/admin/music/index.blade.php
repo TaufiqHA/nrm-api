@@ -4,8 +4,7 @@
 
 @section('content')
 @php
-    $hasUploading = $songs->contains(fn ($song) => $song->music !== null
-        && in_array($song->music->upload_status ?? 'ready', ['pending', 'processing'], true));
+    $hasUploading = $songs->contains(fn ($song) => $song->music?->isUploadInProgress() ?? false);
 @endphp
 <div class="space-y-6 w-full">
 
@@ -144,8 +143,8 @@
                     @forelse ($songs as $song)
                         @php
                             $music = $song->music;
-                            $uploadStatus = $music ? ($music->upload_status ?? 'ready') : null;
-                            $isUploading = in_array($uploadStatus, ['pending', 'processing'], true);
+                            $isUploading = $music?->isUploadInProgress() ?? false;
+                            $hasDriveFile = $music?->hasDriveFile() ?? false;
                             $seconds = (int) ($music->musicduration ?? 0);
                             $durationLabel = $seconds > 0
                                 ? ($seconds >= 3600 ? gmdate('H:i:s', $seconds) : gmdate('i:s', $seconds))
@@ -167,19 +166,19 @@
                                     <span class="inline-flex items-center gap-1 rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-medium text-slate-400">
                                         Belum ada file
                                     </span>
-                                @elseif ($uploadStatus === 'ready')
-                                    <span class="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
-                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                                        </svg>
-                                        Siap
-                                    </span>
                                 @elseif ($isUploading)
                                     <span class="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-300">
                                         <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                                         </svg>
                                         Mengunggah
+                                    </span>
+                                @elseif ($hasDriveFile)
+                                    <span class="inline-flex items-center gap-1 rounded-lg bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-400">
+                                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                                        </svg>
+                                        Siap
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 rounded-lg bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-400" title="{{ $music->upload_error }}">

@@ -46,6 +46,22 @@ test('music endpoint excludes music that is still uploading', function () {
         ->assertJsonCount(0, 'data');
 });
 
+test('music endpoint returns music whose drive file exists despite stale status', function () {
+    Music::create([
+        'musictitle' => 'File Lama',
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+        'upload_status' => 'failed',
+        'upload_error' => 'Worker berhenti sebelum menyimpan status.',
+    ]);
+
+    $this->getJson('/api/music')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.musictitle', 'File Lama');
+});
+
 test('music endpoint can search by title or artist', function () {
     Music::create([
         'musictitle' => 'Pujian Pagi',
@@ -122,6 +138,38 @@ test('stream endpoint proxies drive content with range support', function () {
     $response->assertStatus(206)
         ->assertHeader('Content-Type', 'audio/mpeg')
         ->assertHeader('Content-Range', 'bytes 0-3/100');
+
+    expect($response->streamedContent())->toBe('ID3x');
+});
+
+test('stream endpoint serves an existing drive file despite stale status', function () {
+    $music = Music::create([
+        'musictitle' => 'File Lama',
+        'musicfileid' => 'drive-1',
+        'musicfilename' => 'lama.mp3',
+        'is_active' => true,
+        'sort_order' => 1,
+        'upload_status' => 'failed',
+    ]);
+
+    $this->mock(GoogleDriveService::class, function (MockInterface $mock) {
+        $mock->shouldReceive('openStream')
+            ->once()
+            ->with('drive-1', null)
+            ->andReturn([
+                'status' => 200,
+                'headers' => [
+                    'Content-Type' => 'audio/mpeg',
+                    'Content-Length' => '4',
+                ],
+                'body' => Utils::streamFor('ID3x'),
+            ]);
+    });
+
+    $response = $this->get('/api/music/'.$music->musicid.'/stream');
+
+    $response->assertOk()
+        ->assertHeader('Content-Type', 'audio/mpeg');
 
     expect($response->streamedContent())->toBe('ID3x');
 });

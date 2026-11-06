@@ -27,6 +27,8 @@ class MusicController extends Controller
      */
     public function index(Request $request): View
     {
+        Music::syncReadyStatuses();
+
         $query = Song::query()->with(['category', 'music']);
 
         if ($request->filled('search')) {
