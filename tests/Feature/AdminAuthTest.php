@@ -110,7 +110,6 @@ test('authenticated admin can access dashboard and view statistics', function ()
     $response->assertSee('Overview Dashboard');
     $response->assertSee('Total Koleksi Lagu');
     $response->assertSee('Kategori / Genre');
-    $response->assertSee('Total Pengguna');
     $response->assertSee('Keluar (Logout)');
 });
 

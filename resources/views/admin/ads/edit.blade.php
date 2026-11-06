@@ -55,7 +55,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-semibold text-white">Iklan Utama — Halaman Musik</h2>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman BUKU MERAH (Musik &amp; Lirik)</h2>
                             <p class="text-xs text-slate-400 mt-1">Slot header, pop-up, dan footer yang tampil pada halaman musik.</p>
                         </div>
                     </div>
@@ -99,7 +99,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-semibold text-white">Iklan Halaman Lirik</h2>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman BUKU MERAH (Lirik)</h2>
                             <p class="text-xs text-slate-400 mt-1">Slot khusus mode Hanya Lirik, terpisah dari pengaturan halaman musik.</p>
                         </div>
                     </div>

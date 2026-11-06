@@ -32,7 +32,7 @@ test('admin can view ads page even if no settings record exists yet', function (
 
     $response->assertStatus(200);
     $response->assertSee('Konfigurasi Iklan');
-    $response->assertSee('Iklan Utama');
+    $response->assertSee('Iklan Halaman BUKU MERAH (Musik & Lirik)');
     $response->assertSee('Iklan Bawah');
     $response->assertSee('Simpan Iklan');
     $response->assertSee('type="file"', false);
@@ -54,7 +54,7 @@ test('admin can view ads page even if no settings record exists yet', function (
     $response->assertSee('name="applicationadsbottomclickurl"', false);
     $response->assertSee('Slot 3 — Halaman Utama');
     $response->assertSee('Slot 4 — Pop-up Halaman Lirik Only');
-    $response->assertSee('Iklan Halaman Lirik');
+    $response->assertSee('Iklan Halaman BUKU MERAH (Lirik)');
     $response->assertSee('Halaman Lirik — Atas');
     $response->assertSee('Halaman Lirik — Bawah');
     $response->assertDontSee('name="applicationadsactive"', false);
