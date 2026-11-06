@@ -297,9 +297,10 @@
                     <input type="checkbox" name="is_active" id="song_is_active" value="1" class="h-4 w-4 rounded border-slate-600 bg-slate-950 text-blue-600 focus:ring-blue-500">
                     Tampilkan di aplikasi
                 </label>
+                <div id="songFormErrors" class="hidden rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-400 space-y-1"></div>
                 <div class="flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
                     <button type="button" onclick="closeSongModal()" class="rounded-xl px-4 py-2.5 text-sm font-medium text-slate-300 hover:bg-slate-800">Batal</button>
-                    <button type="submit" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500">Simpan</button>
+                    <button type="submit" id="songSubmitBtn" class="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-70">Simpan</button>
                 </div>
             </form>
         </div>
@@ -328,14 +329,37 @@
     </div>
 </div>
 
+<!-- Upload Progress Toast -->
+<div id="uploadToast" class="fixed bottom-6 right-6 z-[60] hidden w-80 max-w-[calc(100vw-3rem)] rounded-xl border border-slate-800 bg-slate-900 p-4 shadow-2xl">
+    <div class="flex items-start gap-2.5">
+        <svg class="h-5 w-5 shrink-0 text-blue-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
+        </svg>
+        <p id="uploadToastText" class="text-sm font-medium text-slate-200"></p>
+    </div>
+    <div class="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+        <div id="uploadToastBar" class="h-full w-0 rounded-full bg-blue-600 transition-[width] duration-300"></div>
+    </div>
+</div>
+
 <script>
+    const songModal = document.getElementById('songModal');
+    const songForm = document.getElementById('songForm');
+    const songSubmitBtn = document.getElementById('songSubmitBtn');
+    const songFormErrors = document.getElementById('songFormErrors');
+    const uploadToast = document.getElementById('uploadToast');
+    const uploadToastText = document.getElementById('uploadToastText');
+    const uploadToastBar = document.getElementById('uploadToastBar');
+
+    // Mencegah auto-refresh memutus request upload yang masih berjalan.
+    let uploadInFlight = false;
+
     function openSongModal(button) {
-        const form = document.getElementById('songForm');
         const hasMusic = button.dataset.hasMusic === '1';
         const hasFile = button.dataset.hasFile === '1';
         const fileInput = document.getElementById('song_file');
 
-        form.action = `{{ url('/admin/music/songs') }}/${button.dataset.songid}`;
+        songForm.action = `{{ url('/admin/music/songs') }}/${button.dataset.songid}`;
         document.getElementById('song_title').textContent = button.dataset.title;
         document.getElementById('song_number').textContent = `Nomor Lagu: ${button.dataset.number}`;
         document.getElementById('song_file_hint').textContent = hasFile
@@ -348,13 +372,127 @@
             ? button.dataset.active === '1'
             : true;
 
-        document.getElementById('songModal').classList.remove('hidden');
+        clearSongFormErrors();
+        songModal.classList.remove('hidden');
         fileInput.focus();
     }
 
     function closeSongModal() {
-        document.getElementById('songModal').classList.add('hidden');
+        songModal.classList.add('hidden');
     }
+
+    function clearSongFormErrors() {
+        songFormErrors.classList.add('hidden');
+        songFormErrors.innerHTML = '';
+    }
+
+    function showSongFormErrors(payload) {
+        const errors = payload?.errors ?? {};
+        const messages = Object.values(errors).flat();
+        const fallback = payload?.message || 'Terjadi kesalahan. Coba lagi.';
+
+        songFormErrors.innerHTML = (messages.length ? messages : [fallback])
+            .map((message) => {
+                const paragraph = document.createElement('p');
+                paragraph.textContent = message;
+                return paragraph.outerHTML;
+            })
+            .join('');
+        songFormErrors.classList.remove('hidden');
+    }
+
+    function resetSubmitState() {
+        uploadInFlight = false;
+        songSubmitBtn.disabled = false;
+        songSubmitBtn.textContent = 'Simpan';
+    }
+
+    function showUploadToast(message, percent) {
+        uploadToastText.textContent = message;
+        uploadToastBar.style.width = `${Math.max(0, Math.min(100, percent))}%`;
+        uploadToast.classList.remove('hidden');
+    }
+
+    function hideUploadToast() {
+        uploadToast.classList.add('hidden');
+        uploadToastBar.style.width = '0%';
+    }
+
+    function submitSongForm(event) {
+        event.preventDefault();
+
+        const fileInput = document.getElementById('song_file');
+        const file = fileInput.files[0] ?? null;
+
+        if (! file && fileInput.required) {
+            fileInput.reportValidity();
+            return;
+        }
+
+        const title = document.getElementById('song_title').textContent;
+        const formData = new FormData(songForm);
+        const targetUrl = songForm.action;
+
+        // Tutup modal lebih dulu, unggahan tetap berjalan di latar belakang.
+        clearSongFormErrors();
+        closeSongModal();
+        showUploadToast(file ? `Menyiapkan unggahan "${title}"…` : `Menyimpan data "${title}"…`, 0);
+
+        uploadInFlight = true;
+        songSubmitBtn.disabled = true;
+        songSubmitBtn.textContent = 'Menyimpan…';
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', targetUrl, true);
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+        xhr.upload.addEventListener('progress', function (progressEvent) {
+            if (! progressEvent.lengthComputable) {
+                return;
+            }
+
+            const percent = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+            showUploadToast(`Mengunggah "${title}" ${percent}%…`, percent);
+        });
+
+        xhr.addEventListener('load', function () {
+            let payload = null;
+
+            try {
+                payload = JSON.parse(xhr.responseText);
+            } catch (error) {
+                payload = null;
+            }
+
+            if (xhr.status >= 200 && xhr.status < 300) {
+                showUploadToast(`"${title}" tersimpan. Memproses unggahan ke Google Drive di latar belakang…`, 100);
+                resetSubmitState();
+
+                window.setTimeout(function () {
+                    window.location.reload();
+                }, 800);
+
+                return;
+            }
+
+            hideUploadToast();
+            resetSubmitState();
+            showSongFormErrors(payload);
+            songModal.classList.remove('hidden');
+        });
+
+        xhr.addEventListener('error', function () {
+            hideUploadToast();
+            resetSubmitState();
+            showSongFormErrors({ message: 'Koneksi terputus saat mengunggah. Periksa jaringan lalu coba lagi.' });
+            songModal.classList.remove('hidden');
+        });
+
+        xhr.send(formData);
+    }
+
+    songForm.addEventListener('submit', submitSongForm);
 
     function openDeleteModal(id, title) {
         const form = document.getElementById('deleteForm');
@@ -375,14 +513,15 @@
     });
 
     @if ($hasUploading)
-        setTimeout(function () {
-            const songOpen = !document.getElementById('songModal').classList.contains('hidden');
+        window.setInterval(function () {
             const deleteOpen = !document.getElementById('deleteModal').classList.contains('hidden');
 
-            if (!document.hidden && !songOpen && !deleteOpen) {
-                window.location.reload();
+            if (uploadInFlight || document.hidden || !songModal.classList.contains('hidden') || deleteOpen) {
+                return;
             }
-        }, 6000);
+
+            window.location.reload();
+        }, 7000);
     @endif
 </script>
 @endsection

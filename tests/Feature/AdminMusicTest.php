@@ -202,6 +202,56 @@ test('admin can upload a music file for an existing song in the background', fun
     });
 });
 
+test('json upload for a song returns queued status without redirecting', function () {
+    Storage::fake('local');
+    Queue::fake();
+
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create([
+        'songtitle' => 'Lagu Latar Belakang',
+        'songsinger' => '22',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->withHeaders(['Accept' => 'application/json'])
+        ->put('/admin/music/songs/'.$song->songid, [
+            'is_active' => '1',
+            'file' => UploadedFile::fake()->create('lagu.mp3', 1024, 'audio/mpeg'),
+        ]);
+
+    $music = Music::first();
+
+    $response->assertOk()
+        ->assertJsonPath('upload_status', 'pending')
+        ->assertJsonPath('music_id', $music->musicid)
+        ->assertJsonPath('message', 'File musik lagu "Lagu Latar Belakang" sedang diunggah ke Google Drive di latar belakang.');
+
+    expect($music->refresh()->upload_status)->toBe('pending');
+
+    Storage::disk('local')->assertExists($music->pending_file_path);
+    Queue::assertPushed(UploadMusicToDrive::class);
+});
+
+test('json upload without a required file returns validation errors', function () {
+    Storage::fake('local');
+    Queue::fake();
+
+    $admin = User::factory()->admin()->create();
+    $song = Song::factory()->create();
+
+    $response = $this->actingAs($admin)
+        ->withHeaders(['Accept' => 'application/json'])
+        ->put('/admin/music/songs/'.$song->songid, [
+            'is_active' => '1',
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('file');
+
+    expect(Music::count())->toBe(0);
+    Queue::assertNothingPushed();
+});
+
 test('replacing a song music file queues a background upload without duplicating the record', function () {
     Storage::fake('local');
     Queue::fake();

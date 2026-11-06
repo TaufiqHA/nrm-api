@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Music;
 use App\Models\Song;
 use App\Services\GoogleDriveService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -61,7 +62,7 @@ class MusicController extends Controller
     /**
      * Unggah MP3 mandiri yang tidak terhubung ke katalog lagu.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse|JsonResponse
     {
         if ($response = $this->ensureUploadWithinServerLimits($request)) {
             return $response;
@@ -92,7 +93,7 @@ class MusicController extends Controller
     /**
      * Unggah atau perbarui file musik untuk satu lagu katalog.
      */
-    public function uploadForSong(Request $request, Song $song): RedirectResponse
+    public function uploadForSong(Request $request, Song $song): RedirectResponse|JsonResponse
     {
         if ($response = $this->ensureUploadWithinServerLimits($request)) {
             return $response;
@@ -118,8 +119,8 @@ class MusicController extends Controller
 
         if ($request->hasFile('file')) {
             if ($music !== null && in_array($music->upload_status, ['pending', 'processing'], true)) {
-                return back()->withInput()->with(
-                    'error',
+                return $this->uploadErrorResponse(
+                    $request,
                     'File musik sedang diunggah. Tunggu sampai selesai sebelum mengganti file.',
                 );
             }
@@ -148,14 +149,21 @@ class MusicController extends Controller
 
             UploadMusicToDrive::dispatch($music->musicid);
 
-            return redirect()->route('admin.music.index')->with(
-                'success',
-                'File musik lagu "'.$song->songtitle.'" sedang diunggah ke Google Drive di latar belakang.',
-            );
+            $message = 'File musik lagu "'.$song->songtitle.'" sedang diunggah ke Google Drive di latar belakang.';
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'music_id' => $music->musicid,
+                    'upload_status' => $music->upload_status,
+                ]);
+            }
+
+            return redirect()->route('admin.music.index')->with('success', $message);
         }
 
         if ($music === null) {
-            return back()->withInput()->with('error', 'Pilih file MP3 terlebih dahulu.');
+            return $this->uploadErrorResponse($request, 'Pilih file MP3 terlebih dahulu.');
         }
 
         $music->update([
@@ -170,7 +178,7 @@ class MusicController extends Controller
     /**
      * Perbarui metadata dan/atau ganti file MP3 musik lama.
      */
-    public function update(Request $request, Music $music): RedirectResponse
+    public function update(Request $request, Music $music): RedirectResponse|JsonResponse
     {
         if ($response = $this->ensureUploadWithinServerLimits($request)) {
             return $response;
@@ -316,7 +324,7 @@ class MusicController extends Controller
     /**
      * Deteksi kegagalan upload dari batas PHP sebelum validasi berjalan.
      */
-    private function ensureUploadWithinServerLimits(Request $request): ?RedirectResponse
+    private function ensureUploadWithinServerLimits(Request $request): RedirectResponse|JsonResponse|null
     {
         $uploadMax = (string) ini_get('upload_max_filesize');
         $postMax = (string) ini_get('post_max_size');
@@ -324,8 +332,8 @@ class MusicController extends Controller
         $contentLength = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
         if ($contentLength > 0 && $this->parseIniSize($postMax) > 0
             && $contentLength > $this->parseIniSize($postMax)) {
-            return back()->withInput()->with(
-                'error',
+            return $this->uploadErrorResponse(
+                $request,
                 'File gagal diunggah karena ukuran permintaan melebihi batas server '
                 .'(post_max_size = '.$postMax.'). Naikkan post_max_size di php.ini.',
             );
@@ -333,14 +341,26 @@ class MusicController extends Controller
 
         $file = $request->file('file');
         if ($file !== null && ! $file->isValid() && $file->getError() === UPLOAD_ERR_INI_SIZE) {
-            return back()->withInput()->with(
-                'error',
+            return $this->uploadErrorResponse(
+                $request,
                 'File gagal diunggah karena ukurannya melebihi batas server '
                 .'(upload_max_filesize = '.$uploadMax.'). Naikkan batas tersebut di php.ini.',
             );
         }
 
         return null;
+    }
+
+    private function uploadErrorResponse(Request $request, string $message): RedirectResponse|JsonResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'errors' => ['file' => [$message]],
+            ], 422);
+        }
+
+        return back()->withInput()->with('error', $message);
     }
 
     private function parseIniSize(string $value): int
