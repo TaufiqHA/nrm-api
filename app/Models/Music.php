@@ -54,6 +54,7 @@ class Music extends Model
     protected $appends = [
         'cover_url',
         'stream_url',
+        'songlyric',
     ];
 
     /**
@@ -66,6 +67,20 @@ class Music extends Model
         }
 
         return Storage::disk('public')->url($this->musiccover);
+    }
+
+    /**
+     * Lirik lagu katalog yang terhubung dengan musik ini.
+     *
+     * Lirik dikelola dari menu Lirik di admin website dan disimpan pada
+     * kolom `songlyric` di tabel lagu katalog.
+     */
+    public function getSonglyricAttribute(): ?string
+    {
+        $lyric = $this->song?->songlyric;
+        $text = is_string($lyric) ? trim($lyric) : '';
+
+        return $text === '' ? null : $text;
     }
 
     /**

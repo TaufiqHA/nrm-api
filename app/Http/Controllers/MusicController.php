@@ -18,7 +18,10 @@ class MusicController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Music::query()->active()->ready();
+        $query = Music::query()
+            ->active()
+            ->ready()
+            ->with('song:songid,songlyric');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -31,7 +34,8 @@ class MusicController extends Controller
         $music = $query
             ->orderBy('sort_order')
             ->orderBy('musictitle')
-            ->get();
+            ->get()
+            ->each->makeHidden('song');
 
         return response()->json([
             'data' => $music,

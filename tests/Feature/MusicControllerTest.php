@@ -107,6 +107,43 @@ test('music endpoint returns uploaded music linked to a catalog song', function 
         ->assertJsonPath('data.0.musicartist', '7');
 });
 
+test('music endpoint includes lyric from the linked catalog song', function () {
+    $song = Song::factory()->create([
+        'songtitle' => 'Pujian Sore',
+        'songsinger' => '7',
+        'songlyric' => "Ayat 1\nBeribu lidah patutlah\n\nReff\nMenyembah Dia",
+    ]);
+
+    Music::create([
+        'songid' => $song->songid,
+        'musictitle' => $song->songtitle,
+        'musicartist' => $song->songsinger,
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $this->getJson('/api/music')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.songlyric', "Ayat 1\nBeribu lidah patutlah\n\nReff\nMenyembah Dia")
+        ->assertJsonMissingPath('data.0.song');
+});
+
+test('music endpoint returns null lyric when music has no linked song', function () {
+    Music::create([
+        'musictitle' => 'Musik Mandiri',
+        'musicfileid' => 'drive-1',
+        'is_active' => true,
+        'sort_order' => 1,
+    ]);
+
+    $this->getJson('/api/music')
+        ->assertOk()
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.songlyric', null);
+});
+
 test('stream endpoint proxies drive content with range support', function () {
     $music = Music::create([
         'musictitle' => 'Stream',

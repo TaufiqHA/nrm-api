@@ -761,7 +761,8 @@ Mengambil semua musik yang aktif (`is_active = true`) dan sudah selesai diunggah
       "created_at": "2026-11-05T10:00:00.000000Z",
       "updated_at": "2026-11-05T10:00:00.000000Z",
       "cover_url": "https://domain.example/storage/music/covers/abc123.jpg",
-      "stream_url": "https://domain.example/api/music/1/stream"
+      "stream_url": "https://domain.example/api/music/1/stream",
+      "songlyric": "Nyanyian pagi telah tiba\nBurung berkicau riang"
     }
   ]
 }
