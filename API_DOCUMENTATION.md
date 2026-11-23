@@ -1083,6 +1083,12 @@ Accept: application/json
 | `applicationadsactive` | string | Opsional | Status aktif banner atas (`"Y"` atau `"N"`, default: `"Y"`) |
 | `applicationadsbottom` | string | Opsional | URL gambar iklan bottom banner |
 | `applicationadsbottomactive` | string | Opsional | Status aktif bottom banner (`"Y"` atau `"N"`, default: `"Y"`) |
+| `applicationadshome` | string | Opsional | URL gambar iklan pop-up halaman utama |
+| `applicationadshomeactive` | string | Opsional | Status aktif pop-up halaman utama (`"Y"` atau `"N"`, default: `"Y"`) |
+| `applicationadshometop` | string | Opsional | URL gambar banner atas halaman utama |
+| `applicationadshometopactive` | string | Opsional | Status aktif banner atas halaman utama (`"Y"` atau `"N"`, default: `"Y"`) |
+| `applicationadshomebottom` | string | Opsional | URL gambar banner bawah halaman utama |
+| `applicationadshomebottomactive` | string | Opsional | Status aktif banner bawah halaman utama (`"Y"` atau `"N"`, default: `"Y"`) |
 
 ```json
 {

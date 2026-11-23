@@ -182,53 +182,65 @@
                         </div>
                         <div>
                             <h2 class="text-base font-semibold text-white">Iklan Halaman Utama</h2>
-                            <p class="text-xs text-slate-400 mt-1">Pop-up iklan yang tampil saat aplikasi pertama kali dibuka.</p>
+                            <p class="text-xs text-slate-400 mt-1">Banner atas, pop-up pembuka aplikasi, dan banner bawah pada layar utama (landing).</p>
                         </div>
                     </div>
                     <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-slate-800 bg-slate-950 px-3 py-1 text-[11px] font-medium text-slate-400">
                         <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                        1 slot
+                        3 slot
                     </span>
                 </div>
 
-                <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshometop',
+                        'label' => 'Halaman Utama — Atas',
+                    ])
+
                     @include('admin.ads._ad_slot', [
                         'setting' => $setting,
                         'name' => 'applicationadshome',
-                        'label' => 'Slot 3 — Halaman Utama',
+                        'label' => 'Slot 3 — Halaman Utama (Pop-up)',
                     ])
 
-                    <div class="flex h-full flex-col justify-center rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6">
-                        <div class="flex items-center gap-2 text-slate-200">
-                            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                            </svg>
-                            <h3 class="text-sm font-semibold">Ringkasan Slot</h3>
-                        </div>
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshomebottom',
+                        'label' => 'Halaman Utama — Bawah',
+                    ])
+                </div>
 
-                        <ul class="mt-4 space-y-3 text-sm text-slate-400">
-                            <li class="flex gap-2.5">
-                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400"></span>
-                                <span><strong class="font-semibold text-slate-200">Halaman Musik:</strong> banner header, pop-up konten, dan footer.</span>
-                            </li>
-                            <li class="flex gap-2.5">
-                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400"></span>
-                                <span><strong class="font-semibold text-slate-200">Halaman BUKU MERAH (Musik):</strong> banner atas, pop-up, dan banner bawah.</span>
-                            </li>
-                            <li class="flex gap-2.5">
-                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400"></span>
-                                <span><strong class="font-semibold text-slate-200">Halaman Lirik:</strong> banner atas, pop-up, dan banner bawah dengan pengaturan sendiri.</span>
-                            </li>
-                            <li class="flex gap-2.5">
-                                <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"></span>
-                                <span><strong class="font-semibold text-slate-200">Halaman Utama:</strong> pop-up pembuka aplikasi.</span>
-                            </li>
-                        </ul>
-
-                        <p class="mt-5 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-2.5 text-xs leading-relaxed text-blue-300">
-                            Slot halaman musik, halaman BUKU MERAH (Musik), dan halaman lirik dikelola terpisah, sehingga banner tiap halaman tidak saling menimpa.
-                        </p>
+                <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6">
+                    <div class="flex items-center gap-2 text-slate-200">
+                        <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                        </svg>
+                        <h3 class="text-sm font-semibold">Ringkasan Slot</h3>
                     </div>
+
+                    <ul class="mt-4 space-y-3 text-sm text-slate-400">
+                        <li class="flex gap-2.5">
+                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400"></span>
+                            <span><strong class="font-semibold text-slate-200">Halaman Musik:</strong> banner header, pop-up konten, dan footer.</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400"></span>
+                            <span><strong class="font-semibold text-slate-200">Halaman BUKU MERAH (Musik):</strong> banner atas, pop-up, dan banner bawah.</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400"></span>
+                            <span><strong class="font-semibold text-slate-200">Halaman Lirik:</strong> banner atas, pop-up, dan banner bawah dengan pengaturan sendiri.</span>
+                        </li>
+                        <li class="flex gap-2.5">
+                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"></span>
+                            <span><strong class="font-semibold text-slate-200">Halaman Utama:</strong> banner atas, pop-up pembuka aplikasi, dan banner bawah.</span>
+                        </li>
+                    </ul>
+
+                    <p class="mt-5 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-2.5 text-xs leading-relaxed text-blue-300">
+                        Slot halaman musik, halaman BUKU MERAH (Musik), halaman lirik, dan halaman utama dikelola terpisah, sehingga banner tiap halaman tidak saling menimpa.
+                    </p>
                 </div>
             </section>
         </div>
