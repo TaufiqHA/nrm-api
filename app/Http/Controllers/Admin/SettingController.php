@@ -21,6 +21,8 @@ class SettingController extends Controller
         $setting = Setting::first() ?? new Setting([
             'applicationcompany' => '',
             'applicationname' => '',
+            'applicationmusikactive' => 'Y',
+            'applicationlyricactive' => 'Y',
         ]);
 
         return view('admin.settings.edit', [
@@ -38,11 +40,17 @@ class SettingController extends Controller
         $validated = $request->validate([
             'applicationcompany' => ['required', 'string', 'max:100'],
             'applicationname' => ['required', 'string', 'max:255'],
+            'applicationmusikactive' => ['sometimes', 'required', 'in:Y,N'],
+            'applicationlyricactive' => ['sometimes', 'required', 'in:Y,N'],
         ], [
             'applicationcompany.required' => 'Nama perusahaan wajib diisi.',
             'applicationcompany.max' => 'Nama perusahaan maksimal 100 karakter.',
             'applicationname.required' => 'Nama aplikasi wajib diisi.',
             'applicationname.max' => 'Nama aplikasi maksimal 255 karakter.',
+            'applicationmusikactive.required' => 'Status menu Musik wajib dipilih.',
+            'applicationmusikactive.in' => 'Status menu Musik harus bernilai Y atau N.',
+            'applicationlyricactive.required' => 'Status menu Lirik wajib dipilih.',
+            'applicationlyricactive.in' => 'Status menu Lirik harus bernilai Y atau N.',
         ]);
 
         $setting = Setting::first();

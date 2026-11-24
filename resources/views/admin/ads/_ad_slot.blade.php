@@ -79,7 +79,7 @@
                value="{{ $unitValue }}"
                placeholder="ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy"
                class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-        <p class="text-[11px] text-slate-400 mt-1">Wajib diisi bila jenis iklan AdMob. Ambil dari dashboard AdMob (ad unit).</p>
+        <p class="text-[11px] text-slate-400 mt-1">Opsional. Boleh dikosongkan bila belum memiliki Ad Unit ID. Ambil dari dashboard AdMob (ad unit).</p>
         @error($unitName)
             <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
         @enderror

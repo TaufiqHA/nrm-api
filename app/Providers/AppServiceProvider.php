@@ -2,8 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter as FlysystemLocalAdapter;
@@ -27,6 +29,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerLocalFilesystemWithoutFinfo();
+
+        View::composer('layouts.partials.sidebar', function ($view): void {
+            $view->with('menuSetting', Setting::first());
+        });
     }
 
     /**

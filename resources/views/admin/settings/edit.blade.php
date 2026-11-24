@@ -97,6 +97,44 @@
                     </p>
                     <p>Nama aplikasi dan perusahaan akan digunakan di seluruh antarmuka sistem dan respon API aplikasi NRM.</p>
                 </div>
+
+                <!-- Visibilitas Menu -->
+                <div class="border-t border-slate-800 pt-5">
+                    <h3 class="text-sm font-semibold text-slate-200">Visibilitas Menu</h3>
+                    <p class="text-xs text-slate-400 mt-1">Nonaktifkan untuk menyembunyikan menu dari panel admin dan aplikasi mobile.</p>
+
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label for="applicationmusikactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                                Menu Musik
+                            </label>
+                            <select name="applicationmusikactive"
+                                    id="applicationmusikactive"
+                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <option value="Y" {{ old('applicationmusikactive', $setting->applicationmusikactive ?? 'Y') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
+                                <option value="N" {{ old('applicationmusikactive', $setting->applicationmusikactive ?? 'Y') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                            </select>
+                            @error('applicationmusikactive')
+                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="applicationlyricactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                                Menu Lirik
+                            </label>
+                            <select name="applicationlyricactive"
+                                    id="applicationlyricactive"
+                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <option value="Y" {{ old('applicationlyricactive', $setting->applicationlyricactive ?? 'Y') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
+                                <option value="N" {{ old('applicationlyricactive', $setting->applicationlyricactive ?? 'Y') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                            </select>
+                            @error('applicationlyricactive')
+                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Card Footer / Actions -->

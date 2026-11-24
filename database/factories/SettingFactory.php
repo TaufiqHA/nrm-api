@@ -20,6 +20,8 @@ class SettingFactory extends Factory
         return [
             'applicationcompany' => fake()->company(),
             'applicationname' => fake()->words(2, true).' Karaoke',
+            'applicationmusikactive' => 'Y',
+            'applicationlyricactive' => 'Y',
             'applicationads1' => fake()->imageUrl(),
             'applicationads1type' => 'image',
             'applicationads1unit' => null,

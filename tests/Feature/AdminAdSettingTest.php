@@ -114,6 +114,38 @@ test('admin can save ads and upload banner files when record does not exist init
     Storage::disk('public')->assertExists($setting->applicationadsbottom);
 });
 
+test('uploading a banner forces the slot type to image and clears the AdMob unit', function () {
+    Storage::fake('public');
+    $admin = User::factory()->admin()->create();
+
+    Setting::factory()->create([
+        'applicationadshome' => null,
+        'applicationadshometype' => 'admob_app_open',
+        'applicationadshomeunit' => 'ca-app-pub-1234567890123456/9257395921',
+        'applicationadshomeactive' => 'Y',
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationadshome' => UploadedFile::fake()->image('popup.png', 800, 500),
+        'applicationadshometype' => 'admob_app_open',
+        'applicationadshomeunit' => 'ca-app-pub-1234567890123456/9257395921',
+        'applicationadshomeactive' => 'Y',
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadshometype)->toBe('image')
+        ->and($setting->applicationadshomeunit)->toBeNull()
+        ->and($setting->applicationadshome)->not->toBeNull();
+
+    Storage::disk('public')->assertExists($setting->applicationadshome);
+});
+
 test('admin can save different active status for each ad slot', function () {
     Storage::fake('public');
     $admin = User::factory()->admin()->create();
@@ -254,7 +286,7 @@ test('admin can save separate lyric page top and bottom slots', function () {
     Storage::disk('public')->assertExists($setting->applicationadslyrictop);
 });
 
-test('admin save requires ad unit id for lyric page top and bottom admob slots', function () {
+test('admin can save lyric page top and bottom admob slots without ad unit id', function () {
     Storage::fake('public');
     $admin = User::factory()->admin()->create();
 
@@ -268,13 +300,17 @@ test('admin save requires ad unit id for lyric page top and bottom admob slots',
         'applicationadslyricbottomunit' => '',
     ]);
 
-    $response->assertSessionHasErrors([
-        'applicationadslyrictopunit',
-        'applicationadslyricbottomunit',
-    ]);
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadslyrictoptype)->toBe('admob_native')
+        ->and($setting->applicationadslyrictopunit)->toBeNull()
+        ->and($setting->applicationadslyricbottomtype)->toBe('admob_banner')
+        ->and($setting->applicationadslyricbottomunit)->toBeNull();
 });
 
-test('admin save requires ad unit id for home and lyric admob slots', function () {
+test('admin can save home and lyric admob slots without ad unit id', function () {
     Storage::fake('public');
     $admin = User::factory()->admin()->create();
 
@@ -288,10 +324,14 @@ test('admin save requires ad unit id for home and lyric admob slots', function (
         'applicationadslyricunit' => '',
     ]);
 
-    $response->assertSessionHasErrors([
-        'applicationadshomeunit',
-        'applicationadslyricunit',
-    ]);
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadshometype)->toBe('admob_native')
+        ->and($setting->applicationadshomeunit)->toBeNull()
+        ->and($setting->applicationadslyrictype)->toBe('admob_interstitial')
+        ->and($setting->applicationadslyricunit)->toBeNull();
 });
 
 test('admin save rejects invalid banner click url', function () {
@@ -463,7 +503,7 @@ test('admin can save admob ad type with ad unit id without uploading image', fun
         ->and($setting->applicationadsbottomunit)->toBe('ca-app-pub-1234567890123456/2222222222');
 });
 
-test('admin save requires ad unit id when ad type is admob', function () {
+test('admin can save admob ad type without ad unit id', function () {
     Storage::fake('public');
     $admin = User::factory()->admin()->create();
 
@@ -475,7 +515,12 @@ test('admin save requires ad unit id when ad type is admob', function () {
         'applicationadsbottomactive' => 'Y',
     ]);
 
-    $response->assertSessionHasErrors(['applicationads1unit']);
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationads1type)->toBe('admob_banner')
+        ->and($setting->applicationads1unit)->toBeNull();
 });
 
 test('admin save rejects unknown ad type', function () {
@@ -550,7 +595,7 @@ test('admin can save music page top popup and bottom slots', function () {
     Storage::disk('public')->assertExists($setting->applicationadsmusikbottom);
 });
 
-test('admin save requires ad unit id for music page admob slots', function () {
+test('admin can save music page admob slots without ad unit id', function () {
     Storage::fake('public');
     $admin = User::factory()->admin()->create();
 
@@ -566,11 +611,16 @@ test('admin save requires ad unit id for music page admob slots', function () {
         'applicationadsmusikbottomunit' => '',
     ]);
 
-    $response->assertSessionHasErrors([
-        'applicationadsmusiktopunit',
-        'applicationadsmusikunit',
-        'applicationadsmusikbottomunit',
-    ]);
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationadsmusiktoptype)->toBe('admob_native')
+        ->and($setting->applicationadsmusiktopunit)->toBeNull()
+        ->and($setting->applicationadsmusiktype)->toBe('admob_banner')
+        ->and($setting->applicationadsmusikunit)->toBeNull()
+        ->and($setting->applicationadsmusikbottomtype)->toBe('admob_interstitial')
+        ->and($setting->applicationadsmusikbottomunit)->toBeNull();
 });
 
 test('deleting music page banner also clears its click url', function () {

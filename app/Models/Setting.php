@@ -23,6 +23,8 @@ class Setting extends Model
     protected $fillable = [
         'applicationcompany',
         'applicationname',
+        'applicationmusikactive',
+        'applicationlyricactive',
         'applicationads1',
         'applicationads1type',
         'applicationads1unit',

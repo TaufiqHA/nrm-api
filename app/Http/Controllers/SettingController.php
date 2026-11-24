@@ -31,6 +31,8 @@ class SettingController extends Controller
         $validated = $request->validate([
             'applicationcompany' => [$isNew ? 'required' : 'sometimes', 'string', 'max:100'],
             'applicationname' => [$isNew ? 'required' : 'sometimes', 'string', 'max:255'],
+            'applicationmusikactive' => ['sometimes', 'string', 'in:Y,N'],
+            'applicationlyricactive' => ['sometimes', 'string', 'in:Y,N'],
             'applicationads1' => ['nullable', 'string'],
             'applicationads1type' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
             'applicationads1unit' => ['nullable', 'string', 'max:255'],
@@ -156,6 +158,8 @@ class SettingController extends Controller
         $validated = $request->validate([
             'applicationcompany' => ['sometimes', 'required', 'string', 'max:100'],
             'applicationname' => ['sometimes', 'required', 'string', 'max:255'],
+            'applicationmusikactive' => ['sometimes', 'string', 'in:Y,N'],
+            'applicationlyricactive' => ['sometimes', 'string', 'in:Y,N'],
             'applicationads1' => ['nullable', 'string'],
             'applicationads1type' => ['nullable', 'string', 'in:image,admob_native,admob_banner,admob_interstitial,admob_app_open,admob_reward'],
             'applicationads1unit' => ['nullable', 'string', 'max:255'],

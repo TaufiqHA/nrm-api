@@ -516,3 +516,46 @@ test('admin settings api rejects invalid music page ad values', function () {
             'applicationadsmusikbottomtype',
         ]);
 });
+
+test('admin settings api can update menu visibility', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    Setting::factory()->create();
+
+    $response = $this->putJson('/api/admin/settings', [
+        'applicationmusikactive' => 'N',
+        'applicationlyricactive' => 'N',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'data' => [
+                'applicationmusikactive' => 'N',
+                'applicationlyricactive' => 'N',
+            ],
+        ]);
+
+    $this->assertDatabaseHas('tb_application', [
+        'applicationmusikactive' => 'N',
+        'applicationlyricactive' => 'N',
+    ]);
+});
+
+test('admin settings api rejects invalid menu visibility values', function () {
+    $admin = User::factory()->admin()->create();
+    Sanctum::actingAs($admin);
+
+    $response = $this->postJson('/api/admin/settings', [
+        'applicationcompany' => 'PT ABC',
+        'applicationname' => 'Karaoke App',
+        'applicationmusikactive' => 'X',
+        'applicationlyricactive' => 'MAYBE',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors([
+            'applicationmusikactive',
+            'applicationlyricactive',
+        ]);
+});

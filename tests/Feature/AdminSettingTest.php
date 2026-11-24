@@ -94,6 +94,55 @@ test('saving identity settings keeps existing ad configuration untouched', funct
         ->and($setting->applicationadsactive)->toBe('N');
 });
 
+test('admin can toggle music and lyric menu visibility', function () {
+    $admin = User::factory()->admin()->create();
+    Setting::factory()->create([
+        'applicationmusikactive' => 'Y',
+        'applicationlyricactive' => 'Y',
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Suara Emas',
+        'applicationname' => 'Karaoke Mantap',
+        'applicationmusikactive' => 'N',
+        'applicationlyricactive' => 'N',
+    ]);
+
+    $response->assertRedirect('/admin/settings');
+
+    $setting = Setting::first();
+    expect($setting->applicationmusikactive)->toBe('N')
+        ->and($setting->applicationlyricactive)->toBe('N');
+});
+
+test('sidebar hides music and lyric menus when disabled', function () {
+    $admin = User::factory()->admin()->create();
+    Setting::factory()->create([
+        'applicationmusikactive' => 'N',
+        'applicationlyricactive' => 'N',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/settings');
+
+    $response->assertStatus(200);
+    $response->assertDontSee(route('admin.music.index'), false);
+    $response->assertDontSee(route('admin.lyrics.index'), false);
+});
+
+test('sidebar shows music and lyric menus when active', function () {
+    $admin = User::factory()->admin()->create();
+    Setting::factory()->create([
+        'applicationmusikactive' => 'Y',
+        'applicationlyricactive' => 'Y',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/settings');
+
+    $response->assertStatus(200);
+    $response->assertSee(route('admin.music.index'), false);
+    $response->assertSee(route('admin.lyrics.index'), false);
+});
+
 test('validation fails when company or app name is missing', function () {
     $admin = User::factory()->admin()->create();
 
