@@ -378,3 +378,42 @@ test('guest cannot change a category status', function () {
 
     expect($category->fresh()->is_active)->toBeTrue();
 });
+
+test('creating a category automatically creates three ad slots', function () {
+    $admin = User::factory()->admin()->create();
+
+    $this->actingAs($admin)->post('/admin/categories', [
+        'songcategoryname' => 'Kategori Iklan',
+    ])->assertRedirect('/admin/categories');
+
+    $category = Category::where('songcategoryname', 'Kategori Iklan')->firstOrFail();
+
+    expect($category->adSlots()->count())->toBe(3)
+        ->and($category->adSlots()->pluck('slot')->all())
+        ->toEqualCanonicalizing(['top', 'popup', 'bottom'])
+        ->and($category->adSlots()->pluck('active')->unique()->all())->toBe(['Y']);
+});
+
+test('deleting a category removes its ad slot images', function () {
+    Storage::fake('public');
+
+    Storage::disk('public')->put('banners/slot-kategori.jpg', 'old');
+
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Kategori Iklan Hapus',
+    ]);
+
+    $category->adSlots()->where('slot', 'top')->update([
+        'image' => 'banners/slot-kategori.jpg',
+    ]);
+
+    $this->actingAs($admin)
+        ->delete("/admin/categories/{$category->songcategoryid}")
+        ->assertRedirect('/admin/categories');
+
+    Storage::disk('public')->assertMissing('banners/slot-kategori.jpg');
+    $this->assertDatabaseMissing('category_ads', [
+        'songcategoryid' => $category->songcategoryid,
+    ]);
+});

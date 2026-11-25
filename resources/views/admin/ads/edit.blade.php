@@ -243,6 +243,83 @@
                     </p>
                 </div>
             </section>
+
+            <!-- Iklan per Kategori -->
+            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
+                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-cyan-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-white">Iklan Kategori</h2>
+                            <p class="text-xs text-slate-400 mt-1">Slot atas, pop-up, dan bawah yang tampil saat kategori dipilih di aplikasi.</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] font-medium text-cyan-400">
+                        <span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
+                        {{ $categories->count() }} kategori
+                    </span>
+                </div>
+
+                @if ($categories->isEmpty())
+                    <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
+                        Belum ada kategori. Tambahkan kategori terlebih dahulu agar slot iklannya dibuat otomatis.
+                    </div>
+                @else
+                    <div class="space-y-6">
+                        @foreach ($categories as $category)
+                            @php($adsBySlot = $category->adSlots->keyBy('slot'))
+                            <div class="rounded-xl border border-slate-800 bg-slate-950/30 p-4 space-y-4">
+                                <div class="flex items-center justify-between gap-2">
+                                    <h3 class="text-sm font-semibold text-white">{{ $category->songcategoryname }}</h3>
+                                    <span class="inline-flex items-center rounded-lg bg-slate-800 px-2.5 py-1 text-[11px] font-mono font-medium text-slate-300">
+                                        #{{ $category->songcategoryid }}
+                                    </span>
+                                </div>
+
+                                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                                    @include('admin.ads._category_ad_slot', [
+                                        'ad' => $adsBySlot->get('top'),
+                                        'categoryId' => $category->songcategoryid,
+                                        'slot' => 'top',
+                                        'label' => 'Atas',
+                                    ])
+
+                                    @include('admin.ads._category_ad_slot', [
+                                        'ad' => $adsBySlot->get('popup'),
+                                        'categoryId' => $category->songcategoryid,
+                                        'slot' => 'popup',
+                                        'label' => 'Pop-up',
+                                    ])
+
+                                    @include('admin.ads._category_ad_slot', [
+                                        'ad' => $adsBySlot->get('bottom'),
+                                        'categoryId' => $category->songcategoryid,
+                                        'slot' => 'bottom',
+                                        'label' => 'Bawah',
+                                    ])
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6">
+                        <div class="flex items-center gap-2 text-slate-200">
+                            <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                            </svg>
+                            <h3 class="text-sm font-semibold">Catatan</h3>
+                        </div>
+                        <p class="mt-3 text-sm text-slate-400">
+                            Slot iklan dibuat otomatis setiap kali kategori baru ditambahkan. Jika slot kategori tidak aktif atau belum memiliki konten, aplikasi kembali memakai banner halaman musik/lirik.
+                        </p>
+                    </div>
+                @endif
+            </section>
         </div>
 
         <!-- Actions Bar -->
@@ -273,7 +350,9 @@
     }
 
     // Selaraskan tampilan saat halaman dimuat (mis. setelah validasi gagal).
-    document.querySelectorAll('[data-ad-slot] select[name$="type"]').forEach(function (select) {
+    document.querySelectorAll(
+        '[data-ad-slot] select[name$="type"], [data-ad-slot] select[name$="[type]"]'
+    ).forEach(function (select) {
         toggleAdType(select);
     });
 </script>

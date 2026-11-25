@@ -50,13 +50,32 @@ class Category extends Model
     ];
 
     /**
-     * Kategori baru otomatis diletakkan di urutan paling bawah.
+     * Kategori baru otomatis diletakkan di urutan paling bawah dan langsung
+     * mendapatkan tiga slot iklan (atas, pop-up, dan bawah).
      */
     protected static function booted(): void
     {
         static::creating(function (Category $category) {
             if ($category->sort_order === null) {
                 $category->sort_order = (static::max('sort_order') ?? 0) + 1;
+            }
+        });
+
+        static::created(function (Category $category) {
+            foreach (CategoryAd::SLOTS as $slot) {
+                $category->adSlots()->create([
+                    'slot' => $slot,
+                    'type' => 'image',
+                    'active' => 'Y',
+                ]);
+            }
+        });
+
+        static::deleting(function (Category $category) {
+            // Cascade delete di database tidak memicu event model, sehingga
+            // berkas gambar slot iklan harus dibersihkan di sini.
+            foreach ($category->adSlots as $adSlot) {
+                $adSlot->deleteStoredImage();
             }
         });
     }
@@ -81,6 +100,16 @@ class Category extends Model
     public function songs(): HasMany
     {
         return $this->hasMany(Song::class, 'songcategory', 'songcategoryid');
+    }
+
+    /**
+     * Get the ad slots for the category.
+     *
+     * @return HasMany<CategoryAd, $this>
+     */
+    public function adSlots(): HasMany
+    {
+        return $this->hasMany(CategoryAd::class, 'songcategoryid', 'songcategoryid');
     }
 
     /**

@@ -134,6 +134,37 @@
                             @enderror
                         </div>
                     </div>
+
+                    <!-- Visibilitas Kategori -->
+                    <div class="mt-5 border-t border-slate-800/80 pt-5">
+                        <h4 class="text-sm font-semibold text-slate-200">Visibilitas Kategori</h4>
+                        <p class="text-xs text-slate-400 mt-1">Nonaktifkan untuk menyembunyikan kategori dari landing page dan katalog aplikasi mobile.</p>
+
+                        @if ($categories->isEmpty())
+                            <div class="mt-4 rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
+                                Belum ada kategori yang dapat diatur.
+                            </div>
+                        @else
+                            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+                                @foreach ($categories as $category)
+                                    <div>
+                                        <label for="category_visibility_{{ $category->songcategoryid }}" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                                            {{ $category->songcategoryname }}
+                                        </label>
+                                        <select name="category_visibility[{{ $category->songcategoryid }}]"
+                                                id="category_visibility_{{ $category->songcategoryid }}"
+                                                class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                            <option value="Y" {{ old('category_visibility.'.$category->songcategoryid, $category->is_active ? 'Y' : 'N') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
+                                            <option value="N" {{ old('category_visibility.'.$category->songcategoryid, $category->is_active ? 'Y' : 'N') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                                        </select>
+                                        @error('category_visibility.'.$category->songcategoryid)
+                                            <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
                 </div>
             </div>
 

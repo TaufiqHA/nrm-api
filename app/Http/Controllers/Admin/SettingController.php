@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,9 @@ class SettingController extends Controller
 
         return view('admin.settings.edit', [
             'setting' => $setting,
+            'categories' => Category::orderBy('sort_order')
+                ->orderBy('songcategoryname')
+                ->get(),
         ]);
     }
 
@@ -42,6 +46,8 @@ class SettingController extends Controller
             'applicationname' => ['required', 'string', 'max:255'],
             'applicationmusikactive' => ['sometimes', 'required', 'in:Y,N'],
             'applicationlyricactive' => ['sometimes', 'required', 'in:Y,N'],
+            'category_visibility' => ['nullable', 'array'],
+            'category_visibility.*' => ['required', 'in:Y,N'],
         ], [
             'applicationcompany.required' => 'Nama perusahaan wajib diisi.',
             'applicationcompany.max' => 'Nama perusahaan maksimal 100 karakter.',
@@ -51,7 +57,12 @@ class SettingController extends Controller
             'applicationmusikactive.in' => 'Status menu Musik harus bernilai Y atau N.',
             'applicationlyricactive.required' => 'Status menu Lirik wajib dipilih.',
             'applicationlyricactive.in' => 'Status menu Lirik harus bernilai Y atau N.',
+            'category_visibility.*.required' => 'Status visibilitas kategori wajib dipilih.',
+            'category_visibility.*.in' => 'Status visibilitas kategori harus bernilai Y atau N.',
         ]);
+
+        $categoryVisibility = $validated['category_visibility'] ?? [];
+        unset($validated['category_visibility']);
 
         $setting = Setting::first();
 
@@ -59,6 +70,12 @@ class SettingController extends Controller
             $setting->update($validated);
         } else {
             Setting::create($validated);
+        }
+
+        foreach ($categoryVisibility as $categoryId => $status) {
+            Category::whereKey($categoryId)->update([
+                'is_active' => $status === 'Y',
+            ]);
         }
 
         return redirect()->route('admin.settings.edit')->with('success', 'Pengaturan aplikasi berhasil disimpan.');

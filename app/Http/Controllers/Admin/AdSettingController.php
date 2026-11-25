@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
+use App\Models\CategoryAd;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -89,6 +91,10 @@ class AdSettingController extends Controller
 
         return view('admin.ads.edit', [
             'setting' => $setting,
+            'categories' => Category::with('adSlots')
+                ->orderBy('sort_order')
+                ->orderBy('songcategoryname')
+                ->get(),
         ]);
     }
 
@@ -176,6 +182,14 @@ class AdSettingController extends Controller
             'delete_applicationadsmusik' => ['nullable', 'boolean'],
             'delete_applicationadsmusikbottom' => ['nullable', 'boolean'],
             'delete_applicationadsbottom' => ['nullable', 'boolean'],
+            'category_ads' => ['nullable', 'array'],
+            'category_ads.*' => ['array'],
+            'category_ads.*.*.image' => ['nullable', 'file', 'image', 'mimes:jpeg,png,jpg,webp,gif,svg', 'max:2048'],
+            'category_ads.*.*.type' => ['nullable', 'string', 'in:image,'.$admobTypes],
+            'category_ads.*.*.unit' => ['nullable', 'string', 'max:255'],
+            'category_ads.*.*.active' => ['required', 'in:Y,N'],
+            'category_ads.*.*.clickurl' => ['nullable', 'url:http,https', 'max:2048'],
+            'category_ads.*.*.delete_image' => ['nullable', 'boolean'],
         ], [
             'applicationads1.image' => 'Banner iklan slot 1 harus berupa file gambar.',
             'applicationads1.max' => 'Ukuran file banner iklan slot 1 maksimal 2MB.',
@@ -252,6 +266,13 @@ class AdSettingController extends Controller
             'applicationadsbottomactive.in' => 'Status iklan bawah harus bernilai Y atau N.',
             'applicationadsbottomclickurl.url' => 'URL tujuan banner bawah harus berupa URL yang valid.',
             'applicationadsbottomclickurl.max' => 'URL tujuan banner bawah maksimal 2048 karakter.',
+            'category_ads.*.*.image.image' => 'Banner iklan kategori harus berupa file gambar.',
+            'category_ads.*.*.image.max' => 'Ukuran file banner iklan kategori maksimal 2MB.',
+            'category_ads.*.*.type.in' => 'Jenis iklan kategori tidak dikenali.',
+            'category_ads.*.*.active.required' => 'Status iklan kategori wajib dipilih.',
+            'category_ads.*.*.active.in' => 'Status iklan kategori harus bernilai Y atau N.',
+            'category_ads.*.*.clickurl.url' => 'URL tujuan banner kategori harus berupa URL yang valid.',
+            'category_ads.*.*.clickurl.max' => 'URL tujuan banner kategori maksimal 2048 karakter.',
         ]);
 
         $setting = Setting::first();
@@ -288,6 +309,11 @@ class AdSettingController extends Controller
             unset($validated["delete_{$field}"]);
         }
 
+        $categoryAds = $validated['category_ads'] ?? [];
+        unset($validated['category_ads']);
+
+        $this->updateCategoryAds($request, $categoryAds);
+
         // Kolom lama dipakai aplikasi versi sebelumnya: tampilkan iklan utama
         // selama salah satu slot utamanya masih aktif.
         $validated['applicationadsactive'] = ($validated['applicationads1active'] === 'Y' || $validated['applicationads2active'] === 'Y')
@@ -306,5 +332,55 @@ class AdSettingController extends Controller
         }
 
         return redirect()->route('admin.ads.edit')->with('success', 'Konfigurasi iklan berhasil disimpan.');
+    }
+
+    /**
+     * Simpan konfigurasi slot iklan per kategori (atas, pop-up, dan bawah).
+     *
+     * @param  array<int|string, array<string, array<string, mixed>>>  $categoryAds
+     */
+    private function updateCategoryAds(Request $request, array $categoryAds): void
+    {
+        foreach ($categoryAds as $categoryId => $slots) {
+            $categoryId = (int) $categoryId;
+
+            if (! is_array($slots) || ! Category::whereKey($categoryId)->exists()) {
+                continue;
+            }
+
+            foreach ($slots as $slot => $data) {
+                if (! in_array($slot, CategoryAd::SLOTS, true) || ! is_array($data)) {
+                    continue;
+                }
+
+                $ad = CategoryAd::firstOrNew([
+                    'songcategoryid' => $categoryId,
+                    'slot' => $slot,
+                ]);
+
+                $fileKey = "category_ads.{$categoryId}.{$slot}.image";
+
+                if ($request->hasFile($fileKey)) {
+                    // Berkas gambar yang diunggah menang atas pilihan jenis lain.
+                    $ad->deleteStoredImage();
+                    $ad->image = $request->file($fileKey)->store('banners', 'public');
+                    $ad->type = 'image';
+                    $ad->unit = null;
+                } else {
+                    if ($request->boolean("category_ads.{$categoryId}.{$slot}.delete_image")) {
+                        $ad->deleteStoredImage();
+                        $ad->image = null;
+                        $ad->clickurl = null;
+                    }
+
+                    $ad->type = $data['type'] ?? $ad->type ?? 'image';
+                    $ad->unit = $data['unit'] ?? $ad->unit;
+                }
+
+                $ad->active = $data['active'] ?? $ad->active ?? 'Y';
+                $ad->clickurl = $data['clickurl'] ?? $ad->clickurl;
+                $ad->save();
+            }
+        }
     }
 }

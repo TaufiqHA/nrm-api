@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\Category;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -648,4 +649,108 @@ test('deleting music page banner also clears its click url', function () {
         ->and($setting->applicationadsmusiktopclickurl)->toBeNull();
 
     Storage::disk('public')->assertMissing($bannerPath);
+});
+
+test('admin ads page shows the category ad slots', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create(['songcategoryname' => 'Pop Rohani']);
+
+    $response = $this->actingAs($admin)->get('/admin/ads');
+
+    $response->assertStatus(200);
+    $response->assertSee('Iklan Kategori');
+    $response->assertSee('Pop Rohani');
+    $response->assertSee(
+        'name="category_ads['.$category->songcategoryid.'][top][active]"',
+        false,
+    );
+    $response->assertSee(
+        'name="category_ads['.$category->songcategoryid.'][popup][image]"',
+        false,
+    );
+});
+
+test('admin can save category ad slots and upload a banner', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'category_ads' => [
+            $category->songcategoryid => [
+                'top' => [
+                    'active' => 'Y',
+                    'type' => 'image',
+                    'image' => UploadedFile::fake()->image('kategori-top.jpg', 600, 200),
+                    'clickurl' => 'https://example.com/kategori',
+                ],
+                'popup' => [
+                    'active' => 'N',
+                    'type' => 'admob_interstitial',
+                    'unit' => 'ca-app-pub-1234567890123456/2222222222',
+                ],
+                'bottom' => [
+                    'active' => 'Y',
+                    'type' => 'image',
+                ],
+            ],
+        ],
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $top = $category->adSlots()->where('slot', 'top')->firstOrFail();
+    $popup = $category->adSlots()->where('slot', 'popup')->firstOrFail();
+
+    expect($top->active)->toBe('Y')
+        ->and($top->type)->toBe('image')
+        ->and($top->clickurl)->toBe('https://example.com/kategori')
+        ->and($top->image)->not->toBeNull()
+        ->and($popup->active)->toBe('N')
+        ->and($popup->type)->toBe('admob_interstitial')
+        ->and($popup->unit)->toBe('ca-app-pub-1234567890123456/2222222222');
+
+    Storage::disk('public')->assertExists($top->image);
+});
+
+test('uploading a category banner forces the slot type to image and clears the AdMob unit', function () {
+    Storage::fake('public');
+
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create();
+
+    $category->adSlots()->where('slot', 'top')->update([
+        'type' => 'admob_banner',
+        'unit' => 'ca-app-pub-1234567890123456/3333333333',
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/ads', [
+        'applicationads1active' => 'Y',
+        'applicationads2active' => 'Y',
+        'applicationadsbottomactive' => 'Y',
+        'category_ads' => [
+            $category->songcategoryid => [
+                'top' => [
+                    'active' => 'Y',
+                    'type' => 'admob_banner',
+                    'unit' => 'ca-app-pub-1234567890123456/3333333333',
+                    'image' => UploadedFile::fake()->image('kategori-banner.png', 600, 200),
+                ],
+            ],
+        ],
+    ]);
+
+    $response->assertRedirect('/admin/ads');
+    $response->assertSessionHasNoErrors();
+
+    $top = $category->adSlots()->where('slot', 'top')->firstOrFail();
+
+    expect($top->type)->toBe('image')
+        ->and($top->unit)->toBeNull()
+        ->and($top->image)->not->toBeNull();
 });

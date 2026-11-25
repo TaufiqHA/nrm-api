@@ -262,3 +262,35 @@ test('category creation rejects an unknown icon key', function () {
     ])->assertStatus(422)
         ->assertJsonValidationErrors(['icon']);
 });
+
+test('category responses include the ad slots', function () {
+    $category = Category::factory()->create(['songcategoryname' => 'Kategori Iklan']);
+
+    $response = $this->getJson('/api/categories');
+
+    $response->assertStatus(200)
+        ->assertJsonCount(3, 'data.0.ad_slots')
+        ->assertJsonStructure([
+            'data' => [
+                '*' => [
+                    'ad_slots' => [
+                        '*' => [
+                            'slot',
+                            'image',
+                            'type',
+                            'unit',
+                            'active',
+                            'clickurl',
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+    expect(collect($response->json('data.0.ad_slots'))->pluck('slot')->all())
+        ->toEqualCanonicalizing(['top', 'popup', 'bottom']);
+
+    $this->getJson("/api/categories/{$category->songcategoryid}")
+        ->assertStatus(200)
+        ->assertJsonCount(3, 'data.ad_slots');
+});

@@ -14,7 +14,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Category::query();
+        $query = Category::query()->with('adSlots');
 
         if ($request->filled('search')) {
             $query->where('songcategoryname', 'like', '%'.$request->input('search').'%');
@@ -41,7 +41,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'message' => 'Category created successfully',
-            'data' => $category,
+            'data' => $category->load('adSlots'),
         ], 201);
     }
 
@@ -51,7 +51,7 @@ class CategoryController extends Controller
     public function show(Category $category): JsonResponse
     {
         return response()->json([
-            'data' => $category,
+            'data' => $category->load('adSlots'),
         ]);
     }
 
@@ -74,7 +74,7 @@ class CategoryController extends Controller
 
         return response()->json([
             'message' => 'Category updated successfully',
-            'data' => $category->fresh(),
+            'data' => $category->fresh()->load('adSlots'),
         ]);
     }
 

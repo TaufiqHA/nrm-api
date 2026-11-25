@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\UserRole;
+use App\Models\Category;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -152,4 +153,41 @@ test('validation fails when company or app name is missing', function () {
         'applicationcompany',
         'applicationname',
     ]);
+});
+
+test('settings page shows category visibility toggles', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create(['songcategoryname' => 'Kategori Visibilitas']);
+
+    $response = $this->actingAs($admin)->get('/admin/settings');
+
+    $response->assertStatus(200);
+    $response->assertSee('Visibilitas Kategori');
+    $response->assertSee('Kategori Visibilitas');
+    $response->assertSee(
+        'name="category_visibility['.$category->songcategoryid.']"',
+        false,
+    );
+});
+
+test('admin can toggle category visibility from settings', function () {
+    $admin = User::factory()->admin()->create();
+    Setting::factory()->create();
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Kategori Sembunyi',
+        'is_active' => true,
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Suara Emas',
+        'applicationname' => 'Karaoke Mantap',
+        'category_visibility' => [
+            $category->songcategoryid => 'N',
+        ],
+    ]);
+
+    $response->assertRedirect('/admin/settings');
+    $response->assertSessionHasNoErrors();
+
+    expect($category->fresh()->is_active)->toBeFalse();
 });
