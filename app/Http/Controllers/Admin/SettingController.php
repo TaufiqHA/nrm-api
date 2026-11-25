@@ -12,10 +12,17 @@ use Illuminate\View\View;
 class SettingController extends Controller
 {
     /**
+     * Kategori yang sudah ditampilkan sebagai menu, sehingga tidak perlu
+     * muncul lagi di daftar Visibilitas Kategori.
+     */
+    private const MENU_CATEGORY_ID = 1;
+
+    /**
      * Display the settings edit form.
      *
      * Halaman ini hanya mengelola identitas aplikasi (nama perusahaan & nama
-     * aplikasi). Konfigurasi iklan dikelola di halaman Iklan terpisah.
+     * aplikasi) dan visibilitas menu. Konfigurasi iklan dikelola di halaman
+     * Iklan terpisah.
      */
     public function edit(): View
     {
@@ -24,11 +31,16 @@ class SettingController extends Controller
             'applicationname' => '',
             'applicationmusikactive' => 'Y',
             'applicationlyricactive' => 'Y',
+            'applicationmenuindonesiaactive' => 'Y',
+            'applicationmusiklabel' => 'Menu Musik',
+            'applicationlyriclabel' => 'Menu Lirik',
+            'applicationmenuindonesialabel' => 'Menu Indonesia',
         ]);
 
         return view('admin.settings.edit', [
             'setting' => $setting,
-            'categories' => Category::orderBy('sort_order')
+            'categories' => Category::where('songcategoryid', '!=', self::MENU_CATEGORY_ID)
+                ->orderBy('sort_order')
                 ->orderBy('songcategoryname')
                 ->get(),
         ]);
@@ -46,6 +58,10 @@ class SettingController extends Controller
             'applicationname' => ['required', 'string', 'max:255'],
             'applicationmusikactive' => ['sometimes', 'required', 'in:Y,N'],
             'applicationlyricactive' => ['sometimes', 'required', 'in:Y,N'],
+            'applicationmenuindonesiaactive' => ['sometimes', 'required', 'in:Y,N'],
+            'applicationmusiklabel' => ['sometimes', 'required', 'string', 'max:50'],
+            'applicationlyriclabel' => ['sometimes', 'required', 'string', 'max:50'],
+            'applicationmenuindonesialabel' => ['sometimes', 'required', 'string', 'max:50'],
             'category_visibility' => ['nullable', 'array'],
             'category_visibility.*' => ['required', 'in:Y,N'],
         ], [
@@ -57,6 +73,8 @@ class SettingController extends Controller
             'applicationmusikactive.in' => 'Status menu Musik harus bernilai Y atau N.',
             'applicationlyricactive.required' => 'Status menu Lirik wajib dipilih.',
             'applicationlyricactive.in' => 'Status menu Lirik harus bernilai Y atau N.',
+            'applicationmenuindonesiaactive.required' => 'Status menu Indonesia wajib dipilih.',
+            'applicationmenuindonesiaactive.in' => 'Status menu Indonesia harus bernilai Y atau N.',
             'category_visibility.*.required' => 'Status visibilitas kategori wajib dipilih.',
             'category_visibility.*.in' => 'Status visibilitas kategori harus bernilai Y atau N.',
         ]);
@@ -73,9 +91,11 @@ class SettingController extends Controller
         }
 
         foreach ($categoryVisibility as $categoryId => $status) {
-            Category::whereKey($categoryId)->update([
-                'is_active' => $status === 'Y',
-            ]);
+            Category::whereKey($categoryId)
+                ->whereKeyNot(self::MENU_CATEGORY_ID)
+                ->update([
+                    'is_active' => $status === 'Y',
+                ]);
         }
 
         return redirect()->route('admin.settings.edit')->with('success', 'Pengaturan aplikasi berhasil disimpan.');

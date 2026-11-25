@@ -144,6 +144,39 @@ test('sidebar shows music and lyric menus when active', function () {
     $response->assertSee(route('admin.lyrics.index'), false);
 });
 
+test('admin can rename menus inline from settings', function () {
+    $admin = User::factory()->admin()->create();
+    Setting::factory()->create();
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Suara Emas',
+        'applicationname' => 'Karaoke Mantap',
+        'applicationmusiklabel' => 'Musik Karaoke',
+        'applicationlyriclabel' => 'Lirik Karaoke',
+        'applicationmenuindonesialabel' => 'Lagu Indonesia',
+    ]);
+
+    $response->assertRedirect('/admin/settings');
+    $response->assertSessionHasNoErrors();
+
+    $setting = Setting::first();
+    expect($setting->applicationmusiklabel)->toBe('Musik Karaoke')
+        ->and($setting->applicationlyriclabel)->toBe('Lirik Karaoke')
+        ->and($setting->applicationmenuindonesialabel)->toBe('Lagu Indonesia');
+});
+
+test('settings page shows editable menu labels', function () {
+    $admin = User::factory()->admin()->create();
+
+    $response = $this->actingAs($admin)->get('/admin/settings');
+
+    $response->assertStatus(200);
+    $response->assertSee('name="applicationmusiklabel"', false);
+    $response->assertSee('name="applicationlyriclabel"', false);
+    $response->assertSee('name="applicationmenuindonesialabel"', false);
+    $response->assertSee('editMenuLabel', false);
+});
+
 test('validation fails when company or app name is missing', function () {
     $admin = User::factory()->admin()->create();
 
@@ -155,25 +188,86 @@ test('validation fails when company or app name is missing', function () {
     ]);
 });
 
-test('settings page shows category visibility toggles', function () {
+test('settings page shows Indonesia menu visibility toggle', function () {
     $admin = User::factory()->admin()->create();
-    $category = Category::factory()->create(['songcategoryname' => 'Kategori Visibilitas']);
+
+    $response = $this->actingAs($admin)->get('/admin/settings');
+
+    $response->assertStatus(200);
+    $response->assertSee('Menu Indonesia');
+    $response->assertSee('name="applicationmenuindonesiaactive"', false);
+});
+
+test('admin can toggle Indonesia menu visibility from settings', function () {
+    $admin = User::factory()->admin()->create();
+    Setting::factory()->create([
+        'applicationmenuindonesiaactive' => 'Y',
+    ]);
+    $category = Category::factory()->create([
+        'songcategoryname' => 'Indonesia',
+        'is_active' => true,
+    ]);
+
+    $response = $this->actingAs($admin)->put('/admin/settings', [
+        'applicationcompany' => 'PT Suara Emas',
+        'applicationname' => 'Karaoke Mantap',
+        'applicationmenuindonesiaactive' => 'N',
+    ]);
+
+    $response->assertRedirect('/admin/settings');
+    $response->assertSessionHasNoErrors();
+
+    expect(Setting::first()->applicationmenuindonesiaactive)->toBe('N');
+
+    // Data kategori lama tidak ikut berubah saat menu diubah.
+    expect($category->fresh()->is_active)->toBeTrue();
+});
+
+test('settings page shows non-menu categories as category visibility', function () {
+    $admin = User::factory()->admin()->create();
+    $category = Category::factory()->create([
+        'songcategoryid' => 2,
+        'songcategoryname' => 'Kategori Lain',
+    ]);
+    $menuCategory = Category::factory()->create([
+        'songcategoryid' => 1,
+        'songcategoryname' => 'Indonesia',
+    ]);
 
     $response = $this->actingAs($admin)->get('/admin/settings');
 
     $response->assertStatus(200);
     $response->assertSee('Visibilitas Kategori');
-    $response->assertSee('Kategori Visibilitas');
+    $response->assertSee('Kategori Lain');
     $response->assertSee(
         'name="category_visibility['.$category->songcategoryid.']"',
         false,
     );
+    $response->assertDontSee(
+        'name="category_visibility['.$menuCategory->songcategoryid.']"',
+        false,
+    );
 });
 
-test('admin can toggle category visibility from settings', function () {
+test('menu category is hidden from category visibility based on id', function () {
+    $admin = User::factory()->admin()->create();
+    // Nama berbeda tetap disembunyikan karena id-nya id menu (1).
+    $category = Category::factory()->create([
+        'songcategoryid' => 1,
+        'songcategoryname' => 'Nama Kategori Bebas',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/settings');
+
+    $response->assertStatus(200);
+    $response->assertDontSee('name="category_visibility['.$category->songcategoryid.']"', false);
+});
+
+test('admin can toggle non-menu category visibility from settings', function () {
     $admin = User::factory()->admin()->create();
     Setting::factory()->create();
     $category = Category::factory()->create([
+        'songcategoryid' => 2,
         'songcategoryname' => 'Kategori Sembunyi',
         'is_active' => true,
     ]);

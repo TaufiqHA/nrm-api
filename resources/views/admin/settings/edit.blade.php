@@ -104,10 +104,23 @@
                     <p class="text-xs text-slate-400 mt-1">Nonaktifkan untuk menyembunyikan menu dari panel admin dan aplikasi mobile.</p>
 
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label for="applicationmusikactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                                Menu Musik
-                            </label>
+                        <div data-menu-item>
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <label for="applicationmusikactive" data-menu-label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                                    {{ old('applicationmusiklabel', $setting->applicationmusiklabel ?? 'Menu Musik') }}
+                                </label>
+                                <input type="text"
+                                       name="applicationmusiklabel"
+                                       data-menu-label-input
+                                       value="{{ old('applicationmusiklabel', $setting->applicationmusiklabel ?? 'Menu Musik') }}"
+                                       maxlength="50"
+                                       class="hidden w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <button type="button" onclick="editMenuLabel(this)" class="shrink-0 text-slate-400 transition-colors hover:text-blue-400" aria-label="Edit nama menu Musik">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </button>
+                            </div>
                             <select name="applicationmusikactive"
                                     id="applicationmusikactive"
                                     class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
@@ -119,10 +132,23 @@
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="applicationlyricactive" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                                Menu Lirik
-                            </label>
+                        <div data-menu-item>
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <label for="applicationlyricactive" data-menu-label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                                    {{ old('applicationlyriclabel', $setting->applicationlyriclabel ?? 'Menu Lirik') }}
+                                </label>
+                                <input type="text"
+                                       name="applicationlyriclabel"
+                                       data-menu-label-input
+                                       value="{{ old('applicationlyriclabel', $setting->applicationlyriclabel ?? 'Menu Lirik') }}"
+                                       maxlength="50"
+                                       class="hidden w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <button type="button" onclick="editMenuLabel(this)" class="shrink-0 text-slate-400 transition-colors hover:text-blue-400" aria-label="Edit nama menu Lirik">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </button>
+                            </div>
                             <select name="applicationlyricactive"
                                     id="applicationlyricactive"
                                     class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
@@ -133,38 +159,64 @@
                                 <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
                             @enderror
                         </div>
+
+                        <div data-menu-item>
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <label for="applicationmenuindonesiaactive" data-menu-label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                                    {{ old('applicationmenuindonesialabel', $setting->applicationmenuindonesialabel ?? 'Menu Indonesia') }}
+                                </label>
+                                <input type="text"
+                                       name="applicationmenuindonesialabel"
+                                       data-menu-label-input
+                                       value="{{ old('applicationmenuindonesialabel', $setting->applicationmenuindonesialabel ?? 'Menu Indonesia') }}"
+                                       maxlength="50"
+                                       class="hidden w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <button type="button" onclick="editMenuLabel(this)" class="shrink-0 text-slate-400 transition-colors hover:text-blue-400" aria-label="Edit nama menu Indonesia">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <select name="applicationmenuindonesiaactive"
+                                    id="applicationmenuindonesiaactive"
+                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <option value="Y" {{ old('applicationmenuindonesiaactive', $setting->applicationmenuindonesiaactive ?? 'Y') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
+                                <option value="N" {{ old('applicationmenuindonesiaactive', $setting->applicationmenuindonesiaactive ?? 'Y') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                            </select>
+                            @error('applicationmenuindonesiaactive')
+                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
 
-                    <!-- Visibilitas Kategori -->
-                    <div class="mt-5 border-t border-slate-800/80 pt-5">
-                        <h4 class="text-sm font-semibold text-slate-200">Visibilitas Kategori</h4>
-                        <p class="text-xs text-slate-400 mt-1">Nonaktifkan untuk menyembunyikan kategori dari landing page dan katalog aplikasi mobile.</p>
+                    @if ($categories->isNotEmpty())
+                        <!-- Visibilitas Kategori (selain menu Indonesia) -->
+                        <div class="mt-5 border-t border-slate-800/80 pt-5">
+                            <h4 class="text-sm font-semibold text-slate-200">Visibilitas Kategori</h4>
+                            <p class="text-xs text-slate-400 mt-1">Nonaktifkan untuk menyembunyikan kategori dari landing page dan katalog aplikasi mobile.</p>
 
-                        @if ($categories->isEmpty())
-                            <div class="mt-4 rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
-                                Belum ada kategori yang dapat diatur.
-                            </div>
-                        @else
-                            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="mt-4 space-y-3">
                                 @foreach ($categories as $category)
-                                    <div>
-                                        <label for="category_visibility_{{ $category->songcategoryid }}" class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
+                                    <div class="flex flex-col gap-2 rounded-xl border border-slate-800/80 bg-slate-950/60 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <label for="category_visibility_{{ $category->songcategoryid }}" class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                                             {{ $category->songcategoryname }}
                                         </label>
-                                        <select name="category_visibility[{{ $category->songcategoryid }}]"
-                                                id="category_visibility_{{ $category->songcategoryid }}"
-                                                class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-                                            <option value="Y" {{ old('category_visibility.'.$category->songcategoryid, $category->is_active ? 'Y' : 'N') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
-                                            <option value="N" {{ old('category_visibility.'.$category->songcategoryid, $category->is_active ? 'Y' : 'N') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
-                                        </select>
-                                        @error('category_visibility.'.$category->songcategoryid)
-                                            <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                                        @enderror
+                                        <div class="w-full sm:w-64">
+                                            <select name="category_visibility[{{ $category->songcategoryid }}]"
+                                                    id="category_visibility_{{ $category->songcategoryid }}"
+                                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                                <option value="Y" {{ old('category_visibility.'.$category->songcategoryid, $category->is_active ? 'Y' : 'N') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
+                                                <option value="N" {{ old('category_visibility.'.$category->songcategoryid, $category->is_active ? 'Y' : 'N') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                                            </select>
+                                            @error('category_visibility.'.$category->songcategoryid)
+                                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                                            @enderror
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
-                        @endif
-                    </div>
+                        </div>
+                    @endif
                 </div>
             </div>
 
@@ -182,4 +234,45 @@
     </form>
 
 </div>
+
+<script>
+    function editMenuLabel(button) {
+        const item = button.closest('[data-menu-item]');
+        if (!item) return;
+
+        const label = item.querySelector('[data-menu-label]');
+        const input = item.querySelector('[data-menu-label-input]');
+
+        label.classList.add('hidden');
+        button.classList.add('hidden');
+        input.classList.remove('hidden');
+        input.focus();
+        input.select();
+
+        const finish = () => {
+            const value = input.value.trim();
+
+            if (value !== '') {
+                label.textContent = value;
+            } else {
+                input.value = label.textContent.trim();
+            }
+
+            input.classList.add('hidden');
+            label.classList.remove('hidden');
+            button.classList.remove('hidden');
+        };
+
+        input.addEventListener('blur', finish, { once: true });
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                input.blur();
+            } else if (event.key === 'Escape') {
+                input.value = label.textContent.trim();
+                input.blur();
+            }
+        }, { once: true });
+    }
+</script>
 @endsection

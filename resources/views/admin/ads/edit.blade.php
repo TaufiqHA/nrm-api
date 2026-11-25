@@ -45,6 +45,44 @@
 
         <div class="space-y-6 w-full">
 
+            <!-- Halaman Utama -->
+            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
+                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-amber-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman Utama</h2>
+                            <p class="text-xs text-slate-400 mt-1">Banner atas, pop-up pembuka aplikasi, dan banner bawah pada layar utama (landing).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshometop',
+                        'label' => 'Halaman Utama — Atas',
+                    ])
+
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshome',
+                        'label' => 'Slot 3 — Halaman Utama (Pop-up)',
+                    ])
+
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadshomebottom',
+                        'label' => 'Halaman Utama — Bawah',
+                    ])
+                </div>
+
+            </section>
+
             <!-- Halaman Musik -->
             <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
                 <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
@@ -59,10 +97,6 @@
                             <p class="text-xs text-slate-400 mt-1">Slot header, pop-up, dan footer yang tampil pada halaman musik.</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-slate-800 bg-slate-950 px-3 py-1 text-[11px] font-medium text-slate-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-blue-400"></span>
-                        3 slot
-                    </span>
                 </div>
 
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -103,10 +137,6 @@
                             <p class="text-xs text-slate-400 mt-1">Slot khusus mode Hanya Lirik, terpisah dari pengaturan halaman musik.</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                        3 slot terpisah
-                    </span>
                 </div>
 
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -144,10 +174,6 @@
                             <p class="text-xs text-slate-400 mt-1">Slot khusus halaman pemutar musik, terpisah dari halaman karaoke dan halaman lirik.</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1 text-[11px] font-medium text-violet-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-violet-400"></span>
-                        3 slot terpisah
-                    </span>
                 </div>
 
                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
@@ -171,79 +197,6 @@
                 </div>
             </section>
 
-            <!-- Halaman Utama -->
-            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
-                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div class="flex items-start gap-3">
-                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-amber-400">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-base font-semibold text-white">Iklan Halaman Utama</h2>
-                            <p class="text-xs text-slate-400 mt-1">Banner atas, pop-up pembuka aplikasi, dan banner bawah pada layar utama (landing).</p>
-                        </div>
-                    </div>
-                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-slate-800 bg-slate-950 px-3 py-1 text-[11px] font-medium text-slate-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-amber-400"></span>
-                        3 slot
-                    </span>
-                </div>
-
-                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadshometop',
-                        'label' => 'Halaman Utama — Atas',
-                    ])
-
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadshome',
-                        'label' => 'Slot 3 — Halaman Utama (Pop-up)',
-                    ])
-
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadshomebottom',
-                        'label' => 'Halaman Utama — Bawah',
-                    ])
-                </div>
-
-                <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6">
-                    <div class="flex items-center gap-2 text-slate-200">
-                        <svg class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                        </svg>
-                        <h3 class="text-sm font-semibold">Ringkasan Slot</h3>
-                    </div>
-
-                    <ul class="mt-4 space-y-3 text-sm text-slate-400">
-                        <li class="flex gap-2.5">
-                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400"></span>
-                            <span><strong class="font-semibold text-slate-200">Halaman Musik:</strong> banner header, pop-up konten, dan footer.</span>
-                        </li>
-                        <li class="flex gap-2.5">
-                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-violet-400"></span>
-                            <span><strong class="font-semibold text-slate-200">Halaman BUKU MERAH (Musik):</strong> banner atas, pop-up, dan banner bawah.</span>
-                        </li>
-                        <li class="flex gap-2.5">
-                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-400"></span>
-                            <span><strong class="font-semibold text-slate-200">Halaman Lirik:</strong> banner atas, pop-up, dan banner bawah dengan pengaturan sendiri.</span>
-                        </li>
-                        <li class="flex gap-2.5">
-                            <span class="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400"></span>
-                            <span><strong class="font-semibold text-slate-200">Halaman Utama:</strong> banner atas, pop-up pembuka aplikasi, dan banner bawah.</span>
-                        </li>
-                    </ul>
-
-                    <p class="mt-5 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3.5 py-2.5 text-xs leading-relaxed text-blue-300">
-                        Slot halaman musik, halaman BUKU MERAH (Musik), halaman lirik, dan halaman utama dikelola terpisah, sehingga banner tiap halaman tidak saling menimpa.
-                    </p>
-                </div>
-            </section>
-
             <!-- Iklan per Kategori -->
             <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
                 <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
@@ -259,19 +212,17 @@
                             <p class="text-xs text-slate-400 mt-1">Slot atas, pop-up, dan bawah yang tampil saat kategori dipilih di aplikasi.</p>
                         </div>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 self-start rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-[11px] font-medium text-cyan-400">
-                        <span class="h-1.5 w-1.5 rounded-full bg-cyan-400"></span>
-                        {{ $categories->count() }} kategori
-                    </span>
                 </div>
 
-                @if ($categories->isEmpty())
+                @php($visibleCategories = $categories->reject(fn ($category) => strtolower($category->songcategoryname) === 'indonesia'))
+
+                @if ($visibleCategories->isEmpty())
                     <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center text-sm text-slate-400">
                         Belum ada kategori. Tambahkan kategori terlebih dahulu agar slot iklannya dibuat otomatis.
                     </div>
                 @else
                     <div class="space-y-6">
-                        @foreach ($categories as $category)
+                        @foreach ($visibleCategories as $category)
                             @php($adsBySlot = $category->adSlots->keyBy('slot'))
                             <div class="rounded-xl border border-slate-800 bg-slate-950/30 p-4 space-y-4">
                                 <div class="flex items-center justify-between gap-2">
