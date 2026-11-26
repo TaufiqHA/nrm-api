@@ -214,7 +214,8 @@
                     </div>
                 </div>
 
-                @php($visibleCategories = $categories->reject(fn ($category) => strtolower($category->songcategoryname) === 'indonesia'))
+                @php($disabledCategoryIds = [1]) {{-- ID kategori yang tidak ditampilkan di sini (1 = Indonesia) --}}
+                @php($visibleCategories = $categories->reject(fn ($category) => in_array((int) $category->songcategoryid, $disabledCategoryIds, true)))
 
                 @if ($visibleCategories->isEmpty())
                     <div class="rounded-xl border border-dashed border-slate-800 bg-slate-950/40 p-6 text-center text-sm text-slate-400">

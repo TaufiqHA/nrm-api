@@ -653,7 +653,10 @@ test('deleting music page banner also clears its click url', function () {
 
 test('admin ads page shows the category ad slots', function () {
     $admin = User::factory()->admin()->create();
-    $category = Category::factory()->create(['songcategoryname' => 'Pop Rohani']);
+    $category = Category::factory()->create([
+        'songcategoryid' => 2,
+        'songcategoryname' => 'Pop Rohani',
+    ]);
 
     $response = $this->actingAs($admin)->get('/admin/ads');
 
@@ -666,6 +669,31 @@ test('admin ads page shows the category ad slots', function () {
     );
     $response->assertSee(
         'name="category_ads['.$category->songcategoryid.'][popup][image]"',
+        false,
+    );
+});
+
+test('admin ads page hides disabled category by id, not by name', function () {
+    $admin = User::factory()->admin()->create();
+
+    $hidden = Category::factory()->create([
+        'songcategoryid' => 1,
+        'songcategoryname' => 'Bukan Indonesia',
+    ]);
+
+    $visible = Category::factory()->create([
+        'songcategoryname' => 'Indonesia',
+    ]);
+
+    $response = $this->actingAs($admin)->get('/admin/ads');
+
+    $response->assertStatus(200);
+    $response->assertDontSee(
+        'name="category_ads['.$hidden->songcategoryid.'][top][active]"',
+        false,
+    );
+    $response->assertSee(
+        'name="category_ads['.$visible->songcategoryid.'][top][active]"',
         false,
     );
 });
