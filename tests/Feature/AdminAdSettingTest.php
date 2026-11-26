@@ -33,7 +33,7 @@ test('admin can view ads page even if no settings record exists yet', function (
 
     $response->assertStatus(200);
     $response->assertSee('Konfigurasi Iklan');
-    $response->assertSee('Iklan Halaman BUKU MERAH (Musik & Lirik)');
+    $response->assertSee('Iklan Halaman BUKU MERAH (Video Lirik)');
     $response->assertSee('Iklan Bawah');
     $response->assertSee('Simpan Iklan');
     $response->assertSee('type="file"', false);
@@ -544,7 +544,7 @@ test('admin ads page shows the music page slots', function () {
     $response = $this->actingAs($admin)->get('/admin/ads');
 
     $response->assertStatus(200);
-    $response->assertSee('Iklan Halaman BUKU MERAH (Musik)');
+    $response->assertSee('Iklan Halaman BUKU MERAH (Musik Lirik)');
     $response->assertSee('Halaman Musik — Atas');
     $response->assertSee('Halaman Musik — Pop-up');
     $response->assertSee('Halaman Musik — Bawah');

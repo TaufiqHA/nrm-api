@@ -93,7 +93,7 @@
                             </svg>
                         </div>
                         <div>
-                            <h2 class="text-base font-semibold text-white">Iklan Halaman BUKU MERAH (Musik &amp; Lirik)</h2>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman BUKU MERAH (Video Lirik)</h2>
                             <p class="text-xs text-slate-400 mt-1">Slot header, pop-up, dan footer yang tampil pada halaman musik.</p>
                         </div>
                     </div>
@@ -119,6 +119,43 @@
                         'setting' => $setting,
                         'name' => 'applicationadsbottom',
                         'label' => 'Iklan Bawah — Footer',
+                    ])
+                </div>
+            </section>
+
+            <!-- Halaman BUKU MERAH (Musik) -->
+            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
+                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="flex items-start gap-3">
+                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-violet-400">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 0v10.5m0 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 0 9-3.75M18 18.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 0V6.75m0 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-semibold text-white">Iklan Halaman BUKU MERAH (Musik Lirik)</h2>
+                            <p class="text-xs text-slate-400 mt-1">Slot khusus halaman pemutar musik, terpisah dari halaman karaoke dan halaman lirik.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadsmusiktop',
+                        'label' => 'Halaman Musik — Atas',
+                    ])
+
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadsmusik',
+                        'label' => 'Halaman Musik — Pop-up',
+                    ])
+
+                    @include('admin.ads._ad_slot', [
+                        'setting' => $setting,
+                        'name' => 'applicationadsmusikbottom',
+                        'label' => 'Halaman Musik — Bawah',
                     ])
                 </div>
             </section>
@@ -156,43 +193,6 @@
                         'setting' => $setting,
                         'name' => 'applicationadslyricbottom',
                         'label' => 'Halaman Lirik — Bawah',
-                    ])
-                </div>
-            </section>
-
-            <!-- Halaman BUKU MERAH (Musik) -->
-            <section class="rounded-2xl border border-slate-800 bg-slate-900 p-6 shadow-sm space-y-5">
-                <div class="flex flex-col gap-3 border-b border-slate-800 pb-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div class="flex items-start gap-3">
-                        <div class="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-800 bg-slate-950 text-violet-400">
-                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 0v10.5m0 0a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 0 9-3.75M18 18.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm0 0V6.75m0 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0Z" />
-                            </svg>
-                        </div>
-                        <div>
-                            <h2 class="text-base font-semibold text-white">Iklan Halaman BUKU MERAH (Musik)</h2>
-                            <p class="text-xs text-slate-400 mt-1">Slot khusus halaman pemutar musik, terpisah dari halaman karaoke dan halaman lirik.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadsmusiktop',
-                        'label' => 'Halaman Musik — Atas',
-                    ])
-
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadsmusik',
-                        'label' => 'Halaman Musik — Pop-up',
-                    ])
-
-                    @include('admin.ads._ad_slot', [
-                        'setting' => $setting,
-                        'name' => 'applicationadsmusikbottom',
-                        'label' => 'Halaman Musik — Bawah',
                     ])
                 </div>
             </section>

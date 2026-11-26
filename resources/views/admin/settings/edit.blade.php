@@ -106,6 +106,34 @@
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div data-menu-item>
                             <div class="flex items-center justify-between gap-2 mb-1.5">
+                                <label for="applicationmenuindonesiaactive" data-menu-label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                                    {{ old('applicationmenuindonesialabel', $setting->applicationmenuindonesialabel ?? 'Menu Indonesia') }}
+                                </label>
+                                <input type="text"
+                                       name="applicationmenuindonesialabel"
+                                       data-menu-label-input
+                                       value="{{ old('applicationmenuindonesialabel', $setting->applicationmenuindonesialabel ?? 'Menu Indonesia') }}"
+                                       maxlength="50"
+                                       class="hidden w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <button type="button" onclick="editMenuLabel(this)" class="shrink-0 text-slate-400 transition-colors hover:text-blue-400" aria-label="Edit nama menu Indonesia">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <select name="applicationmenuindonesiaactive"
+                                    id="applicationmenuindonesiaactive"
+                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
+                                <option value="Y" {{ old('applicationmenuindonesiaactive', $setting->applicationmenuindonesiaactive ?? 'Y') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
+                                <option value="N" {{ old('applicationmenuindonesiaactive', $setting->applicationmenuindonesiaactive ?? 'Y') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
+                            </select>
+                            @error('applicationmenuindonesiaactive')
+                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div data-menu-item>
+                            <div class="flex items-center justify-between gap-2 mb-1.5">
                                 <label for="applicationmusikactive" data-menu-label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
                                     {{ old('applicationmusiklabel', $setting->applicationmusiklabel ?? 'Menu Musik') }}
                                 </label>
@@ -156,34 +184,6 @@
                                 <option value="N" {{ old('applicationlyricactive', $setting->applicationlyricactive ?? 'Y') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
                             </select>
                             @error('applicationlyricactive')
-                                <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div data-menu-item>
-                            <div class="flex items-center justify-between gap-2 mb-1.5">
-                                <label for="applicationmenuindonesiaactive" data-menu-label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                                    {{ old('applicationmenuindonesialabel', $setting->applicationmenuindonesialabel ?? 'Menu Indonesia') }}
-                                </label>
-                                <input type="text"
-                                       name="applicationmenuindonesialabel"
-                                       data-menu-label-input
-                                       value="{{ old('applicationmenuindonesialabel', $setting->applicationmenuindonesialabel ?? 'Menu Indonesia') }}"
-                                       maxlength="50"
-                                       class="hidden w-full rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1 text-xs text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-                                <button type="button" onclick="editMenuLabel(this)" class="shrink-0 text-slate-400 transition-colors hover:text-blue-400" aria-label="Edit nama menu Indonesia">
-                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <select name="applicationmenuindonesiaactive"
-                                    id="applicationmenuindonesiaactive"
-                                    class="block w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-hidden focus:ring-1 focus:ring-blue-500 transition-colors">
-                                <option value="Y" {{ old('applicationmenuindonesiaactive', $setting->applicationmenuindonesiaactive ?? 'Y') === 'Y' ? 'selected' : '' }}>Aktif (Ditampilkan)</option>
-                                <option value="N" {{ old('applicationmenuindonesiaactive', $setting->applicationmenuindonesiaactive ?? 'Y') === 'N' ? 'selected' : '' }}>Nonaktif (Disembunyikan)</option>
-                            </select>
-                            @error('applicationmenuindonesiaactive')
                                 <p class="mt-1 text-xs text-rose-400">{{ $message }}</p>
                             @enderror
                         </div>
